@@ -22,9 +22,12 @@ Additional libraries for Apache Ant
 * yui-compressor-ant-task-0.5.1.jar - YUI Compressor Ant Task 0.5.1
   https://github.com/n0ha/yui-compressor-ant-task/
   http://javaflight.blogspot.de/2008/01/introducing-yui-compressor-ant-task.html
-  released an open license (according to the author, see link above)
+  released under an open license (according to the author, see link above)
 
 * ant-contrib-1.0b3.jar - Ant Contrib 1.0 beta3
   http://ant-contrib.sourceforge.net/
   released under the Apache Software License
 
+* ant-jshint-0.3.4-deps.jar - Ant JSHint 0.3.4
+  https://github.com/philmander/ant-jshint
+  released under BSD style license
