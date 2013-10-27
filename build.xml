@@ -40,11 +40,6 @@ March 2011		Initial Version for Version 2.1
 January 2013 	Adopted for UpStage 2.4.2 video hack
 March 2013		Added minify with YUI Compressor
 
-Modified by Nitkalya Wiriyanuparb
-05/09/2013 - Added 'start' and 'stop' to start and stop UpStage daemon
-15/09/2013 - Removed 'stop' target, modified 'kill', renamed 'start' to 'clean-start' and made a new 'start' target
-22/10/2013 - Removed the scary 'kill' target, and 'stop' target is back!! and as upstage-server -k now alsos kill policy server process as well
-
 -->
 <project name="UpStage" default="help" basedir=".">
 	
@@ -283,7 +278,7 @@ Modified by Nitkalya Wiriyanuparb
 	</target>
 	
 	<!-- clean the directory tree to get the original state before compilation -->
-	<target name="clean" depends="stop,init" description="clean up temporary files">
+	<target name="clean" depends="kill,init" description="clean up temporary files">
 		<delete dir="${upstage.dir.dist}" />
 		<delete dir="${upstage.dir.build}" />
 		<delete dir="${upstage.dir.tmp}" />
@@ -301,7 +296,8 @@ Modified by Nitkalya Wiriyanuparb
 		<mkdir dir="${upstage.dir.tmp}"/>
 		<echo message="Compiling swf ..." />
 		<!-- compile classes with mtasc -->
-		<mtasc 	src="${upstage.mtasc.client}"
+		<mtasc 	src="${upstage.mtasc.src}"
+				srcdir="${upstage.dir.as2src}"
 				swf="${upstage.mtasc.swf}"
 				classpath="${upstage.dir.as2src}"
 				header="${upstage.swf.width}:${upstage.swf.height}:${upstage.swf.framerate}"
@@ -427,15 +423,7 @@ Modified by Nitkalya Wiriyanuparb
 		<echo file="${upstage.dir.tmp}/upstage-server.bat" message="${upstage.script.upstage-server.win}" />
 		<echo file="${upstage.dir.tmp}/upstage-server.command" message="${upstage.script.upstage-server.mac}" />
 		<echo file="${upstage.dir.tmp}/upstage-server.sh" message="${upstage.script.upstage-server.linux}" />
-
-		<echo file="${upstage.dir.tmp}/upstage-server-daemon.bat" message="${upstage.script.upstage-server-daemon.win}" />
-		<echo file="${upstage.dir.tmp}/upstage-server-daemon.command" message="${upstage.script.upstage-server-daemon.mac}" />
-		<echo file="${upstage.dir.tmp}/upstage-server-daemon.sh" message="${upstage.script.upstage-server-daemon.linux}" />
 		
-		<echo file="${upstage.dir.tmp}/upstage-server-kill.bat" message="${upstage.script.upstage-server-kill.win}" />
-		<echo file="${upstage.dir.tmp}/upstage-server-kill.command" message="${upstage.script.upstage-server-kill.mac}" />
-		<echo file="${upstage.dir.tmp}/upstage-server-kill.sh" message="${upstage.script.upstage-server-kill.linux}" />
-
 		<condition property="upstage.python.executable.replace.win" value="${upstage.python.executable.win}">
 			<isset property="upstage.python.executable.win" />
 		</condition>
@@ -451,14 +439,6 @@ Modified by Nitkalya Wiriyanuparb
 		<replaceregexp file="${upstage.dir.tmp}/upstage-server.bat" match="\$\{upstage.python.executable\}" replace="${upstage.python.executable.replace.win}" flags="g" />
 		<replaceregexp file="${upstage.dir.tmp}/upstage-server.command" match="\$\{upstage.python.executable\}" replace="${upstage.python.executable.replace.mac}" flags="g" />
 		<replaceregexp file="${upstage.dir.tmp}/upstage-server.sh" match="\$\{upstage.python.executable\}" replace="${upstage.python.executable.replace.linux}" flags="g" />
-
-		<replaceregexp file="${upstage.dir.tmp}/upstage-server-daemon.bat" match="\$\{upstage.python.executable\}" replace="${upstage.python.executable.replace.win}" flags="g" />
-		<replaceregexp file="${upstage.dir.tmp}/upstage-server-daemon.command" match="\$\{upstage.python.executable\}" replace="${upstage.python.executable.replace.mac}" flags="g" />
-		<replaceregexp file="${upstage.dir.tmp}/upstage-server-daemon.sh" match="\$\{upstage.python.executable\}" replace="${upstage.python.executable.replace.linux}" flags="g" />
-
-		<replaceregexp file="${upstage.dir.tmp}/upstage-server-kill.bat" match="\$\{upstage.python.executable\}" replace="${upstage.python.executable.replace.win}" flags="g" />
-		<replaceregexp file="${upstage.dir.tmp}/upstage-server-kill.command" match="\$\{upstage.python.executable\}" replace="${upstage.python.executable.replace.mac}" flags="g" />
-		<replaceregexp file="${upstage.dir.tmp}/upstage-server-kill.sh" match="\$\{upstage.python.executable\}" replace="${upstage.python.executable.replace.linux}" flags="g" />
 		
 		<loadfile property="upstage.file.bat" srcfile="${upstage.dir.tmp}/upstage-server.bat" />
 		<loadfile property="upstage.file.command" srcfile="${upstage.dir.tmp}/upstage-server.command" />
@@ -521,21 +501,15 @@ Modified by Nitkalya Wiriyanuparb
 				<!-- exclude development scripts -->
 				<exclude name="**/jslint*" />
 				<exclude name="**/pychecker*" />
-				<exclude name="**/install.py" /> <!-- unused for dev -->
-				<exclude name="**/uninstall.sh" /> <!-- unused for dev -->
 				
 				<include name="**/*.py"/>
-				<include name="**/upstage-server"/> <!-- upstage-admin and upstage-backup are not used for dev -->
 				<include name="**/*.sh"/>
 				<include name="**/*.bat"/>
 				<include name="**/*.command"/>
-				<!-- <include name="**/*.conf"/> is this used? -->
 				
 			</fileset>
 		</copy>
-
-		<move file="${upstage.dir.build}/upstage-server" tofile="${upstage.dir.build}/upstage-server.py"/>
-
+		
 		<!-- chmod scripts in lib folder: make scripts executable -->
 		<chmod perm="755">
 			<fileset dir="${upstage.dir.build}">
@@ -659,95 +633,50 @@ Modified by Nitkalya Wiriyanuparb
 		</exec>
 		
 	</target>
-
-	<!-- start an already built instance of UpStage as a daemon -->
-	<target name="start" depends="set-variables">
+	
+	<!-- kill all running server/policyd instances -->
+	<target name="kill" depends="set-variables">
 		
+		<!-- TODO: check availability of executables? -->
+		
+		<!-- taskkill.exe might not be available on Windows XP SP3 Home -->
+		
+		<!-- determine kill command depending on os -->
+				
 		<condition property="exec.command" value="cmd">
 			<isset property="isWindows" />
 		</condition>
-		<condition property="exec.argline-server" value="/c upstage-server-daemon.bat">
+		<!-- TODO replace executable from properties (without path) -->
+		<condition property="exec.argline-python-kill" value="/c taskkill.exe /F /IM python2.7.exe">
 			<isset property="isWindows" />
 		</condition>
 		
 		<condition property="exec.command" value="/bin/sh">
 			<isset property="isMacOSX" />
 		</condition>
-		<condition property="exec.argline-server" value="upstage-server-daemon.command">
+		<condition property="exec.argline-python-kill" value='-c "killall -v -m -9 [Pp]ython"'>
 			<isset property="isMacOSX" />
 		</condition>
 		
 		<condition property="exec.command" value="/bin/sh">
 			<isset property="isLinux" />
 		</condition>
-		<condition property="exec.argline-server" value="upstage-server-daemon.sh">
+		<condition property="exec.argline-python-kill" value='-c "killall -v -r -9 [Pp]ython"'>
 			<isset property="isLinux" />
 		</condition>
 		
-		<!-- DEBUG -->
-		<echo message="______________________________________________________" />
-		<echo message="Generated command-line to start services:" />
-		<echo message="execution directory : ${upstage.dir.build}" />
-		<echo message="upstage             : ${exec.command} ${exec.argline-server}" />
-		<echo message="______________________________________________________" />
-		
-		<!-- start server -->
-		<echo message="Starting UpStage as a backgroup process.." />
-		<exec executable="${exec.command}" dir="${upstage.dir.build}">
-			<arg line="${exec.argline-server}" />
+		<!-- kill all python processes -->		
+		<echo message="Executing command to kill running programs ..." />
+		<echo message="${exec.command} ${exec.argline-python-kill}" />
+		<exec executable="${exec.command}" outputproperty="exec.out" resultproperty ="exec.result">
+			<arg line="${exec.argline-python-kill}" />
 		</exec>
+		
+		<!-- TODO: output exec.error property if return code != 128 -->
+		<echo level="debug" message="Return code: ${exec.out} (${exec.result})" />
 
 	</target>
-
-	<!-- clean, build, and run the application as a daemon-->
-	<target name="clean-start" depends="clean,build" description="build and run the application as a backgroup process">
-		<antcall target="start">
-		</antcall>
-	</target>
-
-	<!-- kill UpStage started as a daemon -->
-	<target name="stop" depends="set-variables, check-pid" if="pid-present">
-
-		<condition property="exec.command" value="cmd">
-			<isset property="isWindows" />
-		</condition>
-		<condition property="exec.argline-server" value="/c upstage-server-kill.bat">
-			<isset property="isWindows" />
-		</condition>
-
-		<condition property="exec.command" value="/bin/sh">
-			<isset property="isMacOSX" />
-		</condition>
-		<condition property="exec.argline-server" value="upstage-server-kill.command">
-			<isset property="isMacOSX" />
-		</condition>
-
-		<condition property="exec.command" value="/bin/sh">
-			<isset property="isLinux" />
-		</condition>
-		<condition property="exec.argline-server" value="upstage-server-kill.sh">
-			<isset property="isLinux" />
-		</condition>
-
-		<!-- DEBUG -->
-		<echo message="______________________________________________________" />
-		<echo message="Generated command-line to kill UpStage:" />
-		<echo message="execution directory : ${upstage.dir.build}" />
-		<echo message="upstage             : ${exec.command} ${exec.argline-server}" />
-		<echo message="______________________________________________________" />
-
-		<!-- kill server -->
-		<exec executable="${exec.command}" dir="${upstage.dir.build}">
-			<arg line="${exec.argline-server}" />
-		</exec>
-
-	</target>
-
-	<!-- just check if the pid file exists -->
-	<target name="check-pid">
-		<available file="${upstage.dir.build}/upstage.pid" property="pid-present"/>
-	</target>
-
+	
 	<!-- generate doxygen api documentation -->
 	<target name="doc" depends="init" description="generate api documentation (using Doxygen)">
 		
