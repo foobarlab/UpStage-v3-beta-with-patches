@@ -74,18 +74,22 @@ else
         TODISPLAY=$LINTEE
     fi
 
-    #
-    # We've got all the information we need: Now we need to decide
-    # which engine we use.  If `node` exists, use it.  It's amazingly
-    # fast.  Much, much, much faster than Rhino.
-    #
-    if [ -n "`which node`" ]; then
-        node "${NODE_JSLINT}" "${TOPARSE}" "${TODISPLAY}"
-    #
-    # Fallback to Rhino if we have to.  Even though it's ugly and
-    # slow and makes babies cry.
-    #
-    else
-        java -jar "${RHINO}" "${RHINO_JSLINT}" "${TOPARSE}" "${TODISPLAY}"
-    fi
+#    #
+#    # We've got all the information we need: Now we need to decide
+#    # which engine we use.  If `node` exists, use it.  It's amazingly
+#    # fast.  Much, much, much faster than Rhino.
+#    #
+#    if [ -n "`which node`" ]; then
+#        node "${NODE_JSLINT}" "${TOPARSE}" "${TODISPLAY}"
+#    #
+#    # Fallback to Rhino if we have to.  Even though it's ugly and
+#    # slow and makes babies cry.
+#    #
+#    else
+#        java -jar "${RHINO}" "${RHINO_JSLINT}" "${TOPARSE}" "${TODISPLAY}"
+#    fi
+
+     # always use rhino
+     java -jar "${RHINO}" "${RHINO_JSLINT}" "${TOPARSE}" "${TODISPLAY}"
+
 fi
