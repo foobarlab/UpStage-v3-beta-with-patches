@@ -39,6 +39,7 @@ Changelog:
 March 2011		Initial Version for Version 2.1
 January 2013 	Adopted for UpStage 2.4.2 video hack
 March 2013		Added minify with YUI Compressor
+October 2013    Added JSHint JavaScript checker
 
 -->
 <project name="UpStage" default="help" basedir=".">
@@ -77,6 +78,9 @@ March 2013		Added minify with YUI Compressor
 	<taskdef name="yui-compressor" classname="net.noha.tools.ant.yuicompressor.tasks.YuiCompressorTask">
 		<classpath refid="task.yuicompressor.classpath" />
 	</taskdef>
+	
+	<!-- ant-jshint: JavaScript code analyzer, see: https://github.com/philmander/ant-jshint -->
+	<taskdef name="jshint" classname="com.philmander.jshint.JsHintAntTask" classpath="${upstage.dir.antlib}/ant-jshint-0.3.4-deps.jar" />
 	
 	<!-- target for initialization procedure - called from other tasks -->
 	<target name="init" depends="set-variables" >
@@ -281,6 +285,7 @@ March 2013		Added minify with YUI Compressor
 	<target name="clean" depends="kill,init" description="clean up temporary files">
 		<delete dir="${upstage.dir.dist}" />
 		<delete dir="${upstage.dir.build}" />
+		<delete dir="${upstage.dir.report}" />
 		<delete dir="${upstage.dir.tmp}" />
 		<delete dir="${upstage.dir.apidoc}/client/html" />
 		<delete dir="${upstage.dir.apidoc}/server/html" />
@@ -715,67 +720,39 @@ March 2013		Added minify with YUI Compressor
 	<!-- generate automatic report for source code issues -->
 	<target name="report" depends="clean,build" description="automatic report and source code analysis">
 		
-		<!-- run pychecker -->
-		<antcall target="pychecker" inheritall="true" />
+		<mkdir dir="${upstage.dir.report}"/>
+		<echo message="Generating code analysis reports ..." />
 		
-		<!-- run jslint -->
-		<antcall target="jslint" inheritall="true" />
+		<antcall target="report-jshint" inheritall="true" />
+		<!--TODO add jslint, pychecker, code coverage, additional automated test reports ...  -->
 		
 	</target>
 	
-	<!-- run jslint on javascript sources -->
-	<target name="jslint" depends="build">
+	<!-- run jshint on javascript sources -->
+	<target name="report-jshint">
 		
 		<if>
-			<istrue value="${upstage.jslint}" />
+			<istrue value="${upstage.report.jshint}" />
 			<then>
 				
-				<echo message="Invoking JSLint ..." />
+				<echo message="Invoking JSHint ..." />
+				<echo message="Excludesfile: ${basedir}/${upstage.report.javascript.excludesfile}" />
+				<jshint
+					dir="${upstage.report.javascript.dir}"
+					fail="${upstage.report.jshint.failonerror}"
+					options="${upstage.report.jshint.options}"
+					excludesfile="${basedir}/${upstage.report.javascript.excludesfile}">
+						<include name="**/*.js" />
+						<report type="plain" destFile="${upstage.dir.report}/${upstage.report.jshint.logfile}" />
+				</jshint>
 				
-		        <apply dir="${upstage.dir.build}" executable="java" failonerror="${upstage.jslint.failonerror}">
-		            <fileset dir="${upstage.dir.build}">
-		                
-		            	<include name="**/*.js" />
-		            	
-		            	<!-- exclude 3rd party sources -->
-						<exclude name="**/html/ckedit/**" />
-		            	<exclude name="**/html/client.js" />
-		            	<exclude name="**/html/md5.js" />
-		            	<exclude name="**/html/jwplayer.js" />
-		            	
-		            </fileset>
-		            <arg value="-jar" />
-		            <arg path="${upstage.jslint.rhino}" />
-		            <arg path="${upstage.jslint.script}" />
-		            <srcfile />
-		        	
-		        </apply>
 			</then>
 			<else>
-				<echo message="JSLint disabled." />
+				<echo message="JSHint disabled." />
 			</else>
 		</if>
 		
     </target>
-	
-	<!-- run pychecker on python sources -->
-	<target name="pychecker" depends="build">
-		
-		<if>
-			<istrue value="${upstage.pychecker}" />
-			<then>
-						
-				<echo message="Invoking PyChecker ..." />
-			
-				<!-- TODO -->
-				
-			</then>
-			<else>
-				<echo message="PyChecker disabled." />
-			</else>
-		</if>	
-	
-	</target>
 	
 	<!-- deploy via FTP -->
 	<target name="deploy-ftp" description="upload for deployment via FTP" depends="build">
