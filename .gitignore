@@ -12,3 +12,4 @@
 /red5/client/subscriber/html/stream.swf
 /server/src/config/voices/*.sh
 /server/src/html/**/*.zip
+/lib/**/*.zip
