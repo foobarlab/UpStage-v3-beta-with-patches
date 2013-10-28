@@ -1,0 +1,42 @@
+#!/bin/sh
+
+WEBPORT=8081
+SWFPORT=7231
+POLICYPORT=3000
+DIR=/opt/upstage/deploy
+
+# Make sure root can not run our script
+if [ "$(id -u)" == "0" ]; then
+   echo "This script can not be run as root" 1>&2
+   exit 1
+fi
+
+cd $DIR
+
+case "$1" in
+	start)
+		if [ -e $DIR/upstage.pid ]; then
+			echo "Server already started."
+			exit 1
+		else
+			echo "Starting: using web port $WEBPORT, swf port $SWFPORT and policy port $POLICYPORT"
+			$DIR/upstage-server.py -p $SWFPORT -w $WEBPORT -o $POLICYPORT
+		fi
+		;;
+
+        stop)                
+		if [ -e $DIR/upstage.pid ]; then
+			echo "Stopping server."
+			$DIR/upstage-server.py -k
+		else
+			echo "Server not running. Nothing todo."
+			exit 0
+		fi
+		;;
+
+	*)
+		echo "Usage: $0 {start|stop}"
+		exit 1
+esac
+
+exit 0
