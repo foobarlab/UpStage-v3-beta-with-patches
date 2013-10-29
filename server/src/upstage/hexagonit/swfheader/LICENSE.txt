@@ -1,0 +1,1 @@
+GPL licensed, see: https://pypi.python.org/pypi/hexagonit.swfheader
