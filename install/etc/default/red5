@@ -1,0 +1,1 @@
+ export JAVA_OPTS="-Xrs -Xms64M -Xmx512M -Xss128K -Djava.net.preferIPv4Stack=true -Xverify:none"
