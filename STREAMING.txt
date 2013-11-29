@@ -120,7 +120,9 @@ There are several possibilities to stream from your computer to Red5.
 
 For now the easiest is to make use of the provided web interface of the Red5 Media
 Server called Publisher. You find it in the demos of your Red5 installation
-(e.g. http://localhost:5080/demos/publisher.html).
+(e.g. http://localhost:5080/demos/publisher.html). In the end there is no need to use the
+publisher provided by your installation, you can also do a quick search in the internet
+to find public available ones by searching for the terms "red5 publisher".
 The current downside of this web interface is that it provides very poor stream quality.
 So if you want to have best possible quality and bitrates you should choose one of the
 following alternatives below.
