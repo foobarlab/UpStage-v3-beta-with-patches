@@ -2,14 +2,14 @@
 
 /server/src/*.log
 /server/src/upstage/*.pyc
+/server/src/*.pyc
 /client/bin/*.swf
 /client/doc/*.*
 /client/doc/
 /server/src/html/swf/*.swf
 /temp
 /build
-/red5/client/subscriber/bin/*.swf
-/red5/client/subscriber/html/stream.swf
 /server/src/config/voices/*.sh
 /server/src/html/**/*.zip
 /lib/**/*.zip
+**/*.tar.gz
