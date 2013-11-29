@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>UpStage-3.0-beta.foobarlab</name>
+	<name>UpStage-3.0.0.foobarlab.1</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -20,12 +20,23 @@
 			<arguments>
 			</arguments>
 		</buildCommand>
+		<buildCommand>
+			<name>com.powerflasher.fdt.core.FlashBuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
 	</buildSpec>
 	<natures>
 		<nature>org.python.pydev.pythonNature</nature>
 		<nature>org.asdt.core.ASNature</nature>
+		<nature>com.powerflasher.fdt.core.FlashNature</nature>
 	</natures>
 	<linkedResources>
+		<link>
+			<name>core</name>
+			<type>2</type>
+			<locationURI>AS2_CORE_DEFAULT</locationURI>
+		</link>
 		<link>
 			<name>std8</name>
 			<type>2</type>
