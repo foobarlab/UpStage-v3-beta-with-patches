@@ -53,14 +53,17 @@ Modified by: Lisa Helm (24/10/2013) - audio uploads now check their name and ren
 """Defines the web tree."""
 
 #standard lib
-import os, random, datetime, tempfile, string, commands
+import os, random, datetime, string
 from urllib import urlencode
 
 # TODO for compressing
 #from gzip import GzipFile
 
+# pretty print for debugging (see: http://docs.python.org/2/library/pprint.html)
+import pprint
+
 # for http headers
-from time import time, strftime, mktime
+from time import time
 
 #upstage
 from upstage import config, util
@@ -68,33 +71,36 @@ from upstage.util import unique_custom_string, save_tempfile, validSizes, getFil
 from upstage.misc import no_cache, UpstageError
 from upstage.stage import reloadStagesInList
 #Lisa 21/08/2013 - removed video avatar code
-from upstage.pages import  AdminLoginPage, AdminBase, errorpage, Workshop, HomePage, SignUpPage, Workshop, StageEditPage,\
-                           MediaUploadPage, MediaEditPage, CreateDir, \
-                           NewPlayer, EditPlayer, NewAvatar, NewProp, NewBackdrop, NewAudio,     \
+from upstage.pages import  AdminLoginPage, errorpage, HomePage, SignUpPage, Workshop, StageEditPage,\
+                           MediaUploadPage, MediaEditPage, CreateDir,\
+                           NewPlayer, EditPlayer,\
                            ThingsList, StagePage, UserPage, PlayerPage, PageEditPage, HomeEditPage, WorkshopEditPage, SessionCheckPage, successpage,\
                            PlayerEditPage, StagesEditPage, SignupEditPage, AdminError
 
 #twisted
 from twisted.python import log
-from twisted.internet.utils import getProcessValue
-from twisted.internet import reactor
+#from twisted.internet import reactor, defer
+from twisted.internet import utils
 
 from twisted.web import static, server
 from twisted.web.woven import guard
 from twisted.web.util import Redirect
-from twisted.web.resource import IResource, Resource
-
+from twisted.web.resource import IResource, Resource  
 
 from twisted.cred.portal import IRealm, Portal
 from twisted.cred.credentials import IAnonymous, IUsernamePassword
 from twisted.cred.checkers import AllowAnonymousAccess
 
+from upstage.mpeg1audio import MPEGAudio, MPEGAudioHeaderException
+
+from upstage.hexagonit.swfheader import parse
+
 
 class NoCacheFile(static.File):
     """A file that tries not to be cached."""
     def render(self, request):
-        """Set anti-cache headers before returning contents.""" 
-        no_cache(request)	
+        """Set anti-cache headers before returning contents."""
+        no_cache(request)
         return static.File.render(self, request)
 
 # handle cached static.File: http://twistedmatrix.com/documents/8.1.0/api/twisted.web.static.File.html 
@@ -201,7 +207,7 @@ def _getWebsiteTree(data):
     # Shaun Narayan (02/01/10) - Added home and signup pages to docroot.
     docroot.putChild('home', HomePage(data))
     docroot.putChild('signup', SignUpPage())
- 	# Daniel Han (03/07/2012) - Added this session page.
+    # Daniel Han (03/07/2012) - Added this session page.
     docroot.putChild('session', SessionCheckPage(data.players))
     # pluck speech directory out of stages
     docroot.putChild(config.SPEECH_SUBURL, data.stages.speech_server)
@@ -212,37 +218,37 @@ def _getWebsiteTree(data):
 
 
 
-#XXX update to new guard? (or bespoke?)
+# XXX update to new guard? (or bespoke?)
 class AdminRealm:
-	"""The authentication part
+    """The authentication part
 	All comes together here.
 	See twisted docs to try to understand.
 	Newer guard is different: http://twistedmatrix.com/documents/howto/guardindepth
 	"""
 
-	__implements__ = IRealm
+    __implements__ = IRealm
 
-	def __init__(self, data):
-		self.data = data
+    def __init__(self, data):
+        self.data = data
 
 
-	def requestAvatar(self, username, mind, *interfaces):
-		"""Put together a web tree based on player admin permissions
+    def requestAvatar(self, username, mind, *interfaces):
+        """Put together a web tree based on player admin permissions
 		@param username: username of player
 		@param mind: ignored
 		@param interfaces: interfaces
 		"""
 
-		if IResource not in interfaces:
-			raise NotImplementedError("WTF, tried non-web login")
-		player = self.data.players.getPlayer(username)
+        if IResource not in interfaces:
+            raise NotImplementedError("WTF, tried non-web login")
 
-		self.data.players.update_last_login(player)		
+        player = self.data.players.getPlayer(username)
+        self.data.players.update_last_login(player)		
 
-		if player.can_make(): 
-			tree = Workshop(player, self.data)
-			#Shaun Narayan (02/16/10) - Removed all previous new/edit pages and inserted workshop pages.
-			workshop_pages = {'stage' : (StageEditPage, self.data),
+        if player.can_make(): 
+            tree = Workshop(player, self.data)
+            #Shaun Narayan (02/16/10) - Removed all previous new/edit pages and inserted workshop pages.
+            workshop_pages = {'stage' : (StageEditPage, self.data),
 							  'mediaupload' : (MediaUploadPage, self.data),
 							  'mediaedit' : (MediaEditPage, self.data),
 							  'user' : (UserPage, self.data),
@@ -250,47 +256,47 @@ class AdminRealm:
 							  'editplayers' : (EditPlayer, self.data)
 							  }
 
-			""" Admin Only  - Password Page """      
+            """ Admin Only  - Password Page """      
             
-			# AC 01.06.08 - Allows admin only to change only their own password.
-			# Super Admin can change any players details.
-			# NR 03.04.10 - Deprecated due to all users being given access to the User Page and its
-			# password changer.       
-			# Assign the new and edit pages to the website tree         
-			tree.putChild('workshop', CreateDir(player, workshop_pages))
-			tree.putChild('save_thing', SwfConversionWrapper(self.data.mediatypes, player, self.data.stages))
-			#Lisa 21/08/2013 - removed video avatar code
-			# PQ & EB Added 12.10.07
-			tree.putChild('save_audio', AudioFileProcessor(self.data.mediatypes, player, self.data.stages))
-			tree.putChild('id', SessionID(player, self.data.clients))
-			# This is the test sound file for testing avatar voices in workshop - NOT for the audio widget
-			tree.putChild('test.mp3', SpeechTest(self.data.stages.speech_server))
+            # AC 01.06.08 - Allows admin only to change only their own password.
+            # Super Admin can change any players details.
+            # NR 03.04.10 - Deprecated due to all users being given access to the User Page and its
+            # password changer.       
+            # Assign the new and edit pages to the website tree         
+            tree.putChild('workshop', CreateDir(player, workshop_pages))
+            tree.putChild('save_thing', SwfConversionWrapper(self.data.mediatypes, player, self.data.stages))
+            #Lisa 21/08/2013 - removed video avatar code
+            # PQ & EB Added 12.10.07
+            tree.putChild('save_audio', AudioFileProcessor(self.data.mediatypes, player, self.data.stages))
+            tree.putChild('id', SessionID(player, self.data.clients))
+            # This is the test sound file for testing avatar voices in workshop - NOT for the audio widget
+            tree.putChild('test.mp3', SpeechTest(self.data.stages.speech_server))
 
-			if player.can_admin():
-				edit_pages = {'home' : (HomeEditPage, self.data),
+            if player.can_admin():
+                edit_pages = {'home' : (HomeEditPage, self.data),
 							  'workshop' : (WorkshopEditPage, self.data),
                               'player' : (PlayerEditPage, self.data),
                               'stages' : (StagesEditPage, self.data),
                               'signup' : (SignupEditPage, self.data)}
-				tree.putChild('edit', PageEditPage(player, edit_pages))
+                tree.putChild('edit', PageEditPage(player, edit_pages))
                 
 
-		# player, but not admin.
-		elif player.is_player():
-		# Daniel modified 27/06/2012
-			tree = PlayerPage(player, self.data)	    
-			tree.putChild('id', SessionID(player, self.data.clients))
-		# anon - the audience.
-		else:
-			tree = AdminLoginPage(player)
-			tree.putChild('id', SessionID(player, self.data.clients))
+        # player, but not admin.
+        elif player.is_player():
+            # Daniel modified 27/06/2012
+            tree = PlayerPage(player, self.data)	    
+            tree.putChild('id', SessionID(player, self.data.clients))
+            # anon - the audience.
+        else:
+            tree = AdminLoginPage(player)
+            tree.putChild('id', SessionID(player, self.data.clients))
         
-		tree.putChild('home', HomePage(self.data, player))
-		tree.putChild('stages', ThingsList(player, childClass=StagePage, collection=self.data)) 
-		return (IResource, tree, lambda : None)
+        tree.putChild('home', HomePage(self.data, player))
+        tree.putChild('stages', ThingsList(player, childClass=StagePage, collection=self.data)) 
+        return (IResource, tree, lambda : None)
 
 
-#XXX remove references to woven.guard. sometime.
+# XXX remove references to woven.guard. sometime.
 def adminWrapper(data):
     """Ties it together"""
     p = Portal(AdminRealm(data))    # found in twisted.cred.Portal
@@ -319,17 +325,17 @@ class SessionID(Resource):
         @param request: request to render"""
         player = self.player
         no_cache(request)
-        ip = request.getClientIP() #XXX why bother?
+        ip = request.getClientIP() # XXX why bother?
         k = self.clients.add(ip, player)
         log.msg("added player %s, key is %s" %(player, k))
 
         ID = ''
 
         if 'name' in request.args:
-           if request.args['name'][0] == '1':
-              ID = player.name
+            if request.args['name'][0] == '1':
+                ID = player.name
         else:
-              ID = urlencode({
+            ID = urlencode({
                    'player':   player.name,
                    'key':      k,
                    # not used - commented out in Auth.as decode.onLoad
@@ -355,7 +361,7 @@ class AudioFileProcessor(Resource):
         self.stages = stages
 
     def render(self, request):
-        #XXX not checking rights.
+        # XXX not checking rights.
         args = request.args
         
         # FIXME see SwfConversionWrapper: prepare form data
@@ -366,18 +372,18 @@ class AudioFileProcessor(Resource):
         self.assignedstages = request.args.get('assigned')
         name = args.pop('name',[''])[0]
         audio = args.pop('aucontents0', [''])[0] #was 'audio' before, aucontents0 is the name of the mp3 file field
-        type = args.pop('audio_type', [''])[0]
+        audio_type = args.pop('audio_type', [''])[0]
         mediatype = args.pop('type',['audio'])[0]
-        self.message = 'Audio file uploaded & registered as %s, called %s. ' % (type, name)
-        #Corey, Heath, Karena 24/08/2011 - Added to store tags for this audiothing
+        self.message = 'Audio file uploaded & registered as %s, called %s. ' % (audio_type, name)
+        # Corey, Heath, Karena 24/08/2011 - Added to store tags for this audiothing
         self.tags = args.pop('tags',[''])[0]
         # PQ & EB Added 13.10.07
         # Chooses a thumbnail image depending on type (adds to audios.xml file)
         
-        if type == 'sfx':
-             thumbnail = config.SFX_ICON_IMAGE_URL
+        if audio_type == 'sfx':
+            thumbnail = config.SFX_ICON_IMAGE_URL
         else:
-             thumbnail = config.MUSIC_ICON_IMAGE_URL
+            thumbnail = config.MUSIC_ICON_IMAGE_URL
 
         self.media_dict = self.mediatypes[mediatype]
 
@@ -395,17 +401,32 @@ class AudioFileProcessor(Resource):
         
         the_url = config.AUDIO_DIR +"/"+ mp3name
         
-        file = open(the_url, 'wb')
-        file.write(audio)
-        file.close()
+        the_file = open(the_url, 'wb')
+        the_file.write(audio)
+        the_file.close()
         
         filenames = [the_url]
         
         # Alan (09/05/08) ==> Gets the size of audio files using the previously created temp filenames.
         fileSizes = getFileSizes(filenames)
+        
+        # replaced in favor of mpeg1audio:
+        #from mad import MadFile
+        #duration = MadFile(the_url).total_time()
 
-        from mad import MadFile
-        duration = MadFile(the_url).total_time()
+        # see: https://github.com/Ciantic/mpeg1audio/
+        
+        duration = 0
+        try:
+            mp3 = MPEGAudio(open(the_url, 'rb'))
+        except MPEGAudioHeaderException:
+            pass
+        else:
+            duration_formatted = mp3.duration
+            log.msg("web.py: AudioFileProcessor: render(): duration_formatted = %s" % duration_formatted)
+            duration = (duration_formatted.microseconds + (duration_formatted.seconds + duration_formatted.days * 86400) * 1000000) / 1000  # duration is expected in milliseconds
+        
+        log.msg("web.py: AudioFileProcessor: render(): duration = %s" % duration)
         
         if not (fileSizes is None and duration > 0):
             if validSizes(fileSizes, self.player.can_upload_big_file()):
@@ -418,7 +439,7 @@ class AudioFileProcessor(Resource):
 
                     media.setUrl(mp3name)
                     setattr(media, 'file', mp3name)
-                    setattr(media, 'width', duration) # Ing - width attribute is already there
+                    setattr(media, 'width', duration) # Ing - width attribute is already there    # FIXME this is just a lazy excuse ;)
                     setattr(media, 'uploader', self.player.name)
                     setattr(media, 'dateTime', now.strftime("%d/%m/%y @ %I:%M %p"))
                     self.media_dict.save()
@@ -450,7 +471,7 @@ class AudioFileProcessor(Resource):
                                        dateTime=(now.strftime("%d/%m/%y @ %I:%M %p")),
                                        tags=self.tags, #Corey, Heath, Karena 24/08/2011 - Added for media tagging set the tags to self.tags
                                        key=key,
-                                       width=duration) # Ing - width attribute is already there, width-length-length-width, kinda similar ;p
+                                       width=duration) # Ing - width attribute is already there, width-length-length-width, kinda similar ;p    # FIXME this is not the same though
 
                     if self.assignedstages is not None:
                         for x in self.assignedstages:
@@ -484,7 +505,8 @@ class AudioFileProcessor(Resource):
                                                     contact the administrator of this server to ask for permission.', 'mediaupload'))
                     request.finish()
                 except OSError, e:
-                    log.err("Error removing temp file %s (already gone?):\n %s" % (tfn, e))
+                    #log.err("Error removing temp file %s (already gone?):\n %s" % (tfn, e))
+                    log.err("Error removing temp file %s (already gone?):\n %s" % (the_file, e))
 
         # always finish request
         request.finish()
@@ -494,7 +516,7 @@ class AudioFileProcessor(Resource):
         """checking whether a name exists in any media collection"""
         #XXX should perhaps reindex by name.
         log.msg('checking whether "%s" is a used name' %name)
-        for k, d in self.mediatypes.items():
+        for _k, d in self.mediatypes.items():
             for x in d.values():
                 if name == x.name:
                     return True
@@ -564,10 +586,12 @@ class SwfConversionWrapper(Resource):
         # handle kind of images: upload or library:
         imagetype = form.get('imagetype','unknown')
         
+        log.msg("web.py: SwfConversionWrapper: render(): imagetype = %s" % imagetype)
+        
         # handle upload imagetype
         if imagetype == 'upload':
             
-            log.msg('SwfConversionWrapper: render(): imagetype UPLOAD')
+            log.msg("web.py: SwfConversionWrapper: render(): processing upload image handling ...")
             
             # natasha: added prefix value
             prefix = ''
@@ -592,45 +616,100 @@ class SwfConversionWrapper(Resource):
                 imgs = [ (k, v) for k, v in form.iteritems() if k.startswith(contentname) and v ]
                 imgs.sort()
                 
-                # DEBUG:
                 #log.msg("SwfConversionWrapper: imgs = %s" % imgs);
      
                 # save input files in /tmp, also save file names
-                tfns = [ save_tempfile(x[1]) for x in imgs ]
+                tfns = [ save_tempfile(img[1]) for img in imgs ]
+    
+                log.msg("SwfConversionWrapper: tfns = %s" % tfns);
     
                 # Alan (12/09/07) ==> Gets the size of image files using the previously created temp filenames.
                 # natasha getfilesize
                 fileSizes = getFileSizes(tfns)
                 
                 swf = unique_custom_string(suffix='.swf')
+                
+                log.msg("SwfConversionWrapper: swf = %s" % swf);
+                
+                log.msg("SwfConversionWrapper: form mode = %s" % form.get('mode',''));
+                
                 if form.get('mode', '') == 'replace':
                     oldfile = form.get('oldfile')
                     try:
+                        log.msg("SwfConversionWrapper: trying to delete oldfile: %s" % oldfile);
                         self.media_dict.deleteFile(oldfile)
                     except KeyError:
-                        log.msg('the file does not exist. nothing was deleted.')
+                        log.msg('SwfConversionWrapper: the file does not exist. nothing was deleted.')
+                        log.msg("web.py: SwfConversionWrapper: render(): error handling ...")
                         request.write(errorpage(request, 'The file you want to replace does not exist. Accidentally pressed the back button? Tut, tut..', 'mediaedit'))
+                        log.msg("web.py: SwfConversionWrapper: render(): finishing request ...")
                         request.finish()
 
                 thumbnail = swf.replace('.swf', '.jpg')         # FIXME: see #20 (Uploaded media is not converted to JPEG)
                 swf_full = os.path.join(config.MEDIA_DIR, swf)
                 thumbnail_full = os.path.join(config.THUMBNAILS_DIR, thumbnail)
     
-            except UpstageError, e:            
+                log.msg("web.py: SwfConversionWrapper: render(): swf_full = %s" % swf_full)
+                log.msg("web.py: SwfConversionWrapper: render(): thumbnail_full = %s" % thumbnail_full)
+    
+            except UpstageError, e:
+                log.err("web.py: SwfConversionWrapper: render(): UpStage exception: %s" % e)
                 return errorpage(request, e, 'mediaupload')
     
             """ Alan (13/09/07) ==> Check the file sizes of avatar frame """
+            
+            log.msg("web.py: SwfConversionWrapper: render(): checking file sizes ...")
+            
             # natasha continue conversion
             if not (fileSizes is None):
+                
+                log.msg("web.py: SwfConversionWrapper: render(): fileSizes=%s" % fileSizes)
+                
                 if validSizes(fileSizes, self.player.can_upload_big_file()):
-                    # call the process with swf filename and temp image filenames 
-                    d = getProcessValue(config.IMG2SWF_SCRIPT, args=[swf_full, thumbnail_full] + tfns)
-                    args = (swf, thumbnail, form, request)
-                    d.addCallbacks(self.success_upload, self.failure_upload, args, {}, args, {})
+                    
+                    log.msg("web.py: SwfConversionWrapper: render(): fileSizes are valid and user can upload big files")
+                    
+                    # deferred process image conversion
+                    # see: http://twistedmatrix.com/documents/current/core/howto/gendefer.html
+                    # see: http://twistedmatrix.com/documents/current/core/howto/defer.html
+                    # see: http://twistedmatrix.com/documents/8.1.0/api/twisted.internet.defer.Deferred.html
+                    # see: http://twistedmatrix.com/documents/8.2.0/api/twisted.internet.defer.Deferred.html
+                    # see: https://twistedmatrix.com/documents/8.2.0/core/howto/process.html
+                    
+                    executable = config.IMG2SWF_SCRIPT
+                    args =[swf_full, thumbnail_full] + tfns 
+                    path = config.DEPLOY_DIR
+                    
+                    log.msg("web.py: SwfConversionWrapper: render(): creating deferred with arguments: executable=%s, args=%s, path=%s" % (executable, args, path))
+                    
+                    #d = getProcessValue(config.IMG2SWF_SCRIPT, args=[swf_full, thumbnail_full] + tfns)
+                    #d = getProcessValue(config.IMG2SWF_SCRIPT, args=[swf_full, thumbnail_full] + tfns)
+                    d = utils.getProcessValue(executable, args=args, path=path)
+                    #d = utils.getProcessOutput(executable, args=args, path=path)
+                    #args = (swf, thumbnail, form, request)
+                    #d.addCallbacks(self.success_upload, self.failure_upload, args, {}, args, {})
+                    #d.addBoth(self.cleanup_upload, tfns)
+                    
+                    #d.addCallback(self.success_upload,(swf, thumbnail, form, request),{})
+                    #d.addErrback(self.failure_upload,(form, request),{})
+                    
+                    #d.addCallbacks(self.success_upload, self.failure_upload, (swf, thumbnail, form, request), {}, (form, request), {})
+                    d.addCallbacks(self.success_upload, self.failure_upload, (swf, thumbnail, form, request), None, (form, request), None)
                     d.addBoth(self.cleanup_upload, tfns)
                     d.setTimeout(config.MEDIA_TIMEOUT, timeoutFunc=d.errback)
+                    
+                    #d.setTimeout(config.MEDIA_TIMEOUT, (tfns), timeoutFunc=self.cleanup_upload)
+                    
                     d.addErrback(log.err)   # Make sure errors get logged - TODO is this working?
+                    
+                    log.msg("web.py: SwfConversionWrapper: render(): deferred processing: %s" % pprint.saferepr(d))
+
+                    #return d
+                    
                 else:
+                    
+                    log.msg("web.py: SwfConversionWrapper: render(): fileSizes are invalid or user can not upload big files")
+                    
                     redirect = 'mediaupload'
                     if form.get('mode', '') == 'replace':
                         redirect = 'mediaedit'
@@ -638,15 +717,19 @@ class SwfConversionWrapper(Resource):
                     ''' Send new avatar page back containing error message '''
                     self.player.set_setError(True)
                     self.cleanup_upload(None, tfns)
-                    request.write(errorpage(request, 'You do not have the permission to upload a file over 1MB in size.', redirect))
+                    log.msg("web.py: SwfConversionWrapper: render(): error handling ...")
+                    request.write(errorpage(request, 'You do not have the permission to upload a file over 1MB in size.', redirect))    # FIXME read limit from config
                     # request.redirect('/admin/new/%s' %(self.mediatype))
+                    log.msg("web.py: SwfConversionWrapper: render(): finishing request ...")
                     request.finish()
             #return server.NOT_DONE_YET
+            
+            log.msg("web.py: SwfConversionWrapper: render(): continuing after file size checking ...")
         
         # handle library imagetype
         elif imagetype == 'library':
             
-            log.msg('SwfConversionWrapper: render(): imagetype LIBRARY')
+            log.msg("web.py: SwfConversionWrapper: render(): processing library image handling ...")
             
             name = form.get('name', '')
             while self.name_is_used(name):
@@ -723,33 +806,46 @@ class SwfConversionWrapper(Resource):
                     log.msg("render(): assigning to stages: %s" % self.assignedstages)
                     self.assign_media_to_stages(self.assignedstages, key, self.mediatype)
                     
-            except UpstageError, e:            
+            except UpstageError, e:
+                log.err("web.py: SwfConversionWrapper: render(): UpStage exception: %s" % e)
                 return errorpage(request, e, 'mediaupload')
             
             log.msg("render(): got past media_dict.add, YES")
             
+            log.msg("web.py: SwfConversionWrapper: render(): success handling ...")
             request.write(successpage(request, 'Your Avatar "' + name + '" has been added successfully'))
+            log.msg("web.py: SwfConversionWrapper: render(): finishing request ...")
             request.finish()
         
         # handle unknown imagetypes
         else:
             # output error, because we do not have a valid imagetype
-            log.err('SwfConversionWrapper: render(): Unsupported imagetype: %s' % imagetype)
+            log.msg("web.py: SwfConversionWrapper: render(): Unsupported imagetype")
+            log.msg("web.py: SwfConversionWrapper: render(): error handling ...")
             request.write(errorpage(request, "Unsupported image type '%s'." % imagetype, 'mediaupload'))
+            log.msg("web.py: SwfConversionWrapper: render(): finishing request ...")
             request.finish() 
         
+        log.msg("web.py: SwfConversionWrapper: render(): request not done yet ...")
         return server.NOT_DONE_YET
     
     """
      Modified by: Corey, Heath, Karena 24/08/2011 - Added media tagging to self.media_dict.add
     """
 
-    def success_upload(self, exitcode, swf, thumbnail, form, request):
+    def success_upload(self, result, swf, thumbnail, form, request):
         """Catch results of the process.  If it seems to have worked,
         register the new thing."""
-        if exitcode:
-	    #request.write(exitcode)
-            return self.failure_upload(exitcode, swf, thumbnail, form, request)
+        
+        log.msg("web.py: SwfConversionWrapper: success_upload(): result=%s,swf=%s,thumbnail=%s,request=%s" % (result,swf,thumbnail,request))
+
+        # FIXME is this really used here? the deferred already has a failure handling ...
+        if result:
+            #request.write(exitcode)
+            log.msg("web.py: SwfConversionWrapper: success_upload(): result = %s" % pprint.saferepr(result))
+            log.msg("web.py: SwfConversionWrapper: success_upload(): result.value = %s" % pprint.saferepr(result.value))
+            log.msg("web.py: SwfConversionWrapper: success_upload(): result.value.exitCode = %s" % pprint.saferepr(result.value.exitCode))
+        #    return self.failure_upload(result, swf, thumbnail, form, request)
 
         # if the name is in use, mangle it until it is not.
         #XXX this is not perfect, but
@@ -816,18 +912,26 @@ class SwfConversionWrapper(Resource):
         log.msg("success_upload(): now = %s" % now)
         log.msg("success_upload(): voice = %s" % voice)
 
-        size_x = ''
-        size_y = ''
+        size_x = '0'
+        size_y = '0'
         # get actual swf width and height from the file
         if swf.endswith('.swf'):
-            size_x = commands.getoutput("swfdump -X html/media/" + swf).split()[1];
-            size_y = commands.getoutput("swfdump -Y html/media/" + swf).split()[1];
-
+            # FIXME does this really work as expected? swfdump should be called with absolute path and subprocess
+            # FIXME what if size_x or size_y contain unexpected results?
+            # replaced with hexagonit swfreader
+            #size_x = commands.getoutput("swfdump -X html/media/" + swf).split()[1];
+            #size_y = commands.getoutput("swfdump -Y html/media/" + swf).split()[1];
+            metadata = parse(swf)
+            log.msg("success_upload(): analyzed swf: swf=%s, metadata=%s" % (swf,pprint.saferepr(metadata)))
+            size_x, size_y = metadata['width'], metadata['height']
+            log.msg("web.py: SwfConversionWrapper: success_upload(): size_x = %s, size_y = %s" % (size_x, size_y))
+            
         success_message = ''
 
+        log.msg("web.py: SwfConversionWrapper: success_upload(): form mode = %s" % form.get('mode', ''))
 
         if form.get('mode', '') == 'replace':
-            oldfilename = form.get('oldfile')
+            #oldfilename = form.get('oldfile')    # unused
             key = form.get('key')
             media = self.media_dict[key]
 
@@ -923,9 +1027,9 @@ class SwfConversionWrapper(Resource):
             
     def name_is_used(self, name):
         """checking whether a name exists in any media collection"""
-        #XXX should perhaps reindex by name.
-        log.msg('checking whether "%s" is a used name' %name)
-        for k, d in self.mediatypes.items():
+        # XXX should perhaps reindex by name.
+        log.msg('name_is_used(): checking whether "%s" is a used avatar name' % name)
+        for _k, d in self.mediatypes.items():
             for x in d.values():
                 if name == x.name:
                     return True
@@ -939,26 +1043,47 @@ class SwfConversionWrapper(Resource):
     def redirect(self, request, swf):
         """Redirect a request to the edit thing page.
         # @param swf swf filename"""
-        #XXX url path should be consolidated somewhere.
+        # XXX url path should be consolidated somewhere.
         url = '/admin/edit/%s/%s' % (self.mediatype, swf)
         request.redirect(url)
         request.finish()
 
-    def failure_upload(self, exitcode, swf, thumbnail, form, request):
+    #def failure_upload(self, result, swf, thumbnail, form, request):
+    def failure_upload(self, failure, form, request):
         """Nothing much to do but spread the word"""
         errMsg = 'Something went wrong.' #Change error message back to default - Gavin
 
-        if form.get('mode', '') == 'replace':
+        #log.err('failure_upload(): swf=%s, thumbnail=%s, request=%s' % (swf,thumbnail,request))
+        log.err('failure_upload(): failure=%s' % failure)
+
+        if failure:
+            log.err('failure_upload(): failure: %s' % pprint.saferepr(failure))
+            log.err("failure_upload(): failure value: %s" % pprint.saferepr(failure.value))
+            log.err('failure_upload(): failure error msg: %s' % pprint.saferepr(failure.getErrorMessage()))
+            #result.printTraceback()
+        
+        try:
+            if failure.value.exitCode:
+                log.err("failure_upload(): failure exit code: %s" % pprint.saferepr(failure.value.exitCode))
+        except AttributeError:
+            log.err("failure_upload(): got no failure exit code - operation timed out")
+                    
+        log.msg("web.py: SwfConversionWrapper: failure_upload(): form mode = %s" % form.get('mode', ''))
+
+        if (form.get('mode', '') == 'replace'):
             errMsg += ' Your media was not replaced.'
-            # restore old file
+            log.err('failure_upload(): restoreOldFile: oldfile=' % form.get('oldfile'))
             self.media_dict.restoreOldFile(form.get('oldfile'))
 
         AdminError.errorMsg = errMsg
-        request.write(errorpage(request, 'SWF creation failed - maybe the image was bad. See img2swf.log for details', 'mediaupload'))
+        request.write(errorpage(request, 'SWF creation failed - operation timed out or conversion did not succeed. See img2swf.log for details', 'mediaupload'))
         request.finish() 
         
     def cleanup_upload(self, nothing, tfns):
         """Be rid of temp files"""
+        
+        log.msg("web.py: SwfConversionWrapper: cleanup_upload()")
+        
         try:
             nothing.printTraceback()
         except AttributeError:
