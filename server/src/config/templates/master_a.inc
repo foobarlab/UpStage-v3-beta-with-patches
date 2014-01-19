@@ -1,13 +1,13 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<!--[if IE]> <html class="ie" xmlns="http://www.w3.org/1999/xhtml"> <![endif]-->
-<!--[if !IE]><!--> <html xmlns="http://www.w3.org/1999/xhtml"> <!--<![endif]-->
-
+<!DOCTYPE html>
+<!--[if lte IE 8 ]><html class="ie8"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html> <!--<![endif]-->
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=8" />
 <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+
 <title>UpStage</title>
 
-<link rel="stylesheet" type="text/css" href="/style/main.css" />
-<link rel="shortcut icon" href="/style/favicon.ico" />
+<link rel="shortcut icon" href="/favicon.ico" />
 
 <link rel="stylesheet" media="screen" type="text/css" href="/script/slickgrid/slick.grid.css" />
 <link rel="stylesheet" media="screen" type="text/css" href="/script/slickgrid/css/smoothness/jquery-ui-1.8.16.custom.css" />
@@ -38,15 +38,12 @@
 <script type="text/javascript" src="/script/custom-context-menu/rightClick.js"></script>
 <script type="text/javascript" src="/script/flowplayer/flowplayer-3.2.12.min.js"></script>
 
-
-<script language="javascript" type="text/javascript" src="/script/masterpage.js"></script>
-<script language="javascript" type="text/javascript" src="/script/client.js"></script>
-<script language="javascript" type="text/javascript" src="/script/stageedit.js"></script>
-<script language="javascript" type="text/javascript" src="/script/mediaupload.js"></script>
-<script language="javascript" type="text/javascript" src="/script/mediaedit.js"></script>
-<script language="javascript" type="text/javascript" src="/script/user.js"></script>
-<script language="javascript" type="text/javascript" src="/script/md5.js" ></script>
-<script language="javascript" type="text/javascript" src="/script/jwplayer.js"></script>
+<!-- upstage scripts -->
+<script type="text/javascript" src="/script/masterpage.js"></script>
+<script type="text/javascript" src="/script/stageedit.js"></script>
+<script type="text/javascript" src="/script/mediaupload.js"></script>
+<script type="text/javascript" src="/script/mediaedit.js"></script>
+<script type="text/javascript" src="/script/user.js"></script>
 
 <!-- logging -->
 <script type="text/javascript" src="/script/log4javascript/log4javascript.js"></script>
@@ -62,7 +59,7 @@
 	var popUpAppender = new log4javascript.PopUpAppender();
 	log.addAppender(popUpAppender);
 	
-	log4javascript.setEnabled(false); // set to false to disable logging output
+	log4javascript.setEnabled(true); // set to false to disable logging output
 </script>
 <!-- /logging -->
 
@@ -84,12 +81,12 @@ if (/*@cc_on!@*/false) {
 			<input id="alertBtn" type='button' onclick="hidePopup();" value='Close' />
     	</div>
     </div>
-	<script type="text/javascript">test_flash()</script>
+	<script type="text/javascript">test_flash()</script><!-- TODO what does this script do? does it test if flash is installed? -->
 	<div id="masterpage">
 		<div id="header">
 			<div id="logo">
 				<!-- Daniel Han (26/06/2012) - Fixed logo link to upstage.org.nz -->
-				<a href="http://www.upstage.org.nz"><img border="0" src="/image/upstagelogo.jpg" alt="Upstage" /></a>
+				<a href="http://www.upstage.org.nz"><img border="0" src="/image/upstagelogo.jpg" alt="Upstage" width="140" height="89" /></a>
 			</div>
 			<form name="hidden_form" action="">
 			<input name="user_name" type ="hidden" value="%(username)s" />

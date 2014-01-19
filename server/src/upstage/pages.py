@@ -114,8 +114,8 @@ Modified by: Lisa Helm and Vanessa Henderson (18/10/2013) fixed stage lock, made
 
 #standard lib
 import os, re, datetime, time, string
-from urllib import urlencode
-import tempfile # natasha
+#from urllib import urlencode
+#import tempfile # natasha
 
 # pretty print for debugging (see: http://docs.python.org/2/library/pprint.html)
 import pprint
@@ -129,15 +129,16 @@ except ImportError:
 #upstage
 from upstage import config
 from upstage.misc import no_cache, UpstageError  
-from upstage.util import save_tempfile, get_template, validSizes, getFileSizes, createHTMLOptionTags, convertLibraryItemToImageFilePath, convertLibraryItemToImageName
+#from upstage.util import save_tempfile, get_template, validSizes, getFileSizes, createHTMLOptionTags, convertLibraryItemToImageFilePath, convertLibraryItemToImageName
+from upstage.util import get_template, createHTMLOptionTags, convertLibraryItemToImageFilePath, convertLibraryItemToImageName
 from upstage.voices import VOICES
-from upstage.globalmedia import MediaDict
-from upstage.player import PlayerDict
+#from upstage.globalmedia import MediaDict
+#from upstage.player import PlayerDict
 from upstage import websession
 
 #twisted
 from twisted.python import log
-from twisted.internet.utils import getProcessValue # natasha
+#from twisted.internet.utils import getProcessValue # natasha
 from twisted.web.resource import Resource
 from twisted.web import server
 
@@ -198,8 +199,8 @@ class Template(Resource):
             else:
                 out.append(getattr(self, 'text_' + x)(request))
             out.append(rest)
-        str = ''.join(out)
-        return str
+        render_str = ''.join(out)
+        return render_str
 
     def render_POST(self, request):
         
@@ -226,8 +227,8 @@ class Template(Resource):
             else:
                 out.append(getattr(self, 'text_' + x)(request))
             out.append(rest)
-        str = ''.join(out)
-        return str
+        render_str = ''.join(out)
+        return render_str
         
 class AdminBase(Template):
     
@@ -312,8 +313,8 @@ class AdminBase(Template):
                 stage = self.collection.stages.get(k)
                 num_players += stage.num_players()
                 num_audience += stage.num_audience()
-            str = '%d#%d' %(num_players,num_audience)
-            return str
+            details_text = '%d#%d' %(num_players,num_audience)	# FIXME unchecked types?
+            return details_text
         except:
             return ''
 
@@ -321,8 +322,8 @@ class AdminBase(Template):
     def text_nav(self, request):
         try:
             if self.player.can_admin():
-               html_list = '<li id="editpagelink"> <a href="/admin/edit/"> Edit Page Mode</a> </li>'
-               return html_list
+                html_list = '<li id="editpagelink"> <a href="/admin/edit/"> Edit Page Mode</a> </li>'
+                return html_list
             else:
                 return '&nbsp;'
         except:
@@ -337,7 +338,7 @@ class AdminError(AdminBase):
     def __init__(self, error, page='', code=None):
         log.msg(self.log_message % error)
         #Template.__init__(self)
-        self.errorMsg = 'Something went wrong'
+        self.errorMsg = 'Unknown error'
         self.error = str(error)
         if code is not None:
             self.code = code        
@@ -351,6 +352,8 @@ class AdminError(AdminBase):
             self.errorRedirect = 'workshop/user'
         else:
             self.errorRedirect = ''
+            
+        log.msg("pages.py: AdminError: __init__(): error=%s, errorMsg=%s, code=%s, page=%s, errorRedirect=%s" % (self.error,self.errorMsg,self.code,page,self.errorRedirect))
 
     def render(self, request):
         """render from the template, and set the http response code."""
@@ -409,8 +412,8 @@ class PageEditPage(AdminBase):
 
         return self
 
-	def render(self, request):
-		return AdminBase.render(self, request) 
+    def render(self, request):
+        return AdminBase.render(self, request) 
 
 """
 Added by: Daniel Han (29/06/2012) 
@@ -640,8 +643,13 @@ def errorpage(request, message='bad posture', page='admin', code=500):
     """Convenience error writer
     Makes an error page, and returns a rendering thereof.
     @param request request that is being handled
-    @param message message to send to AdminError"""
+    @param message message to send to AdminError
+    @param page ???
+    @param code ???"""
     #XXX should set error header code.
+    
+    log.msg("pages.py: errorpage(): request=%s, message=%s, page=%s, code=%s" % (request, message, page, code))
+    
     p = AdminError(message, page, code)
     r = p.render(request)
     return r
@@ -651,6 +659,9 @@ def successpage(request, message='success', code=200, redirect='mediaupload'):
     Makes an success page, and returns a rendering thereof.
     @param request request that is being handled
     @param message message to send to AdminSuccess"""
+    
+    log.msg("pages.py: successpage(): request=%s, message=%s, code=%s, redirect=%s" % (request, message, code, redirect))
+    
     p = AdminSuccess(message, code, redirect)
     r = p.render(request)
     return r    
@@ -850,8 +861,8 @@ class StageEditPage(Workshop):
             if len(self.stage.unassigned) !=0:
                 for m in self.stage.unassigned:
                     if m is not None:
-						if media.count(m) > 0: 
-							media.remove(m)
+                        if media.count(m) > 0: 
+                            media.remove(m)
         return media
 
     def text_list_media_assigned(self,request): #1/10/13 - Lisa - converts and returns the output from assigned_media into something the html can use
@@ -903,7 +914,7 @@ class StageEditPage(Workshop):
             log.msg('Getting blist')
             backdrops = self.stage.get_backdrop_list()
             if not backdrops is None:
-               backdrops.sort()
+                backdrops.sort()
             return backdrops
 
     def list_Audios(self, request):#(14/04/2013) Craig; 1/10/13 - Lisa - returns sorted list of audios rather than html string
@@ -911,7 +922,7 @@ class StageEditPage(Workshop):
             log.msg('Getting aulist')
             audios = self.stage.get_audio_list()
             if not audios is None:
-               audios.sort()
+                audios.sort()
             return audios
 
     def text_list_stages(self, request):
@@ -1134,17 +1145,17 @@ class StageEditPage(Workshop):
             log.msg('es - view media method finished')
 
         ### Modified by Daniel, 27/06/2012
-	    ### 	- added for loop to make multiple selects possible
+        ### 	- added for loop to make multiple selects possible
         ### Modified by Daniel, 12/09/2012
         ###     - removed remove_al_three from being called. (al_three not used)
-	    ##one to two
+        ##one to two
         elif action=='one_to_two':
             items = request.args.get('cantaccess',[''])
             for i in range(0, len(items)):
                 pname = items[i]
                 if self.stagename and pname:
                     self.stage.add_al_two(pname)
-	
+
         elif action=='two_to_one':
             items = request.args.get('canaccess',[''])
             for i in range(0, len(items)):
@@ -1199,8 +1210,8 @@ class MediaEditPage(Workshop):
         self.filter_stage = ''
         self.filter_type = ''
         self.filter_medium = ''
-        self.filter_tags = ''
-        self.search_text = ''
+        self.filter_tags = ''	# FIXME filtering tags should be done client-side only
+        self.search_text = ''	# FIXME what does "search_text" mean? which text???
         
         # delete data / assign stages
         self.select_key = ''
@@ -1250,7 +1261,7 @@ class MediaEditPage(Workshop):
             voicelist.extend('<option value="%s">%s</option>' % (voice, voice))
         return ''.join(voicelist)
     
-   #Lisa Helm (30/8/13)- removed Video Avatar Code
+    #Lisa Helm (30/8/13)- removed Video Avatar Code
     
     def text_list_stages_as_json(self, request):
         keys = self.collection.stages.getKeys()
@@ -1642,6 +1653,7 @@ class MediaEditPage(Workshop):
                 log.msg("MediaEditPage: _get_data(): filter_medium matched: %s" % match_medium);
                 
                 #check if tags match    - David Daniels and Nikos Philips
+                # FIXME should be done client-side only...
                 if self.filter_tags != '':
                     tags = dataset['tags'].split(', ')
                     try:
@@ -1656,6 +1668,7 @@ class MediaEditPage(Workshop):
                 log.msg("MediaEditPage: _get_data(): filter_tags matched: %s" % match_tags);
                 
                 #check if search string matches
+                # FIXME is "search_text" means "searching user names" then this should go client-side only too...
                 if self.search_text != '':
                     names = dataset['name'].split(',')
                     try:
@@ -1776,7 +1789,7 @@ class MediaUploadPage(Workshop):
         table = [] 
         if keys:
             for k in keys:
-                stage = self.collection.stages.get(k)   # FIXME this is unused?
+                #stage = self.collection.stages.get(k)   # FIXME this is unused?
                 table.extend('<option value="%s">%s</option>' % (k, k))
                 #return ''.join(table)
         else:
@@ -1819,7 +1832,7 @@ class MediaUploadPage(Workshop):
     
         form = request.args
         submit = _value('submit')
-        type = _value('type')
+        upload_type = _value('type')
         savemedia = _value('saveMedia')
         assigned = ''
         medianame = ''
@@ -1836,15 +1849,15 @@ class MediaUploadPage(Workshop):
             try:
                 if not self.medianame == '':
                     # make sure this attribute is in the 
-                    if type == 'avatar':
+                    if upload_type == 'avatar':
                         self.media = self.collection.avatars.get(medianame)
-                    elif type == 'prop':
+                    elif upload_type == 'prop':
                         self.media = self.collection.props.get(medianame)
-                    elif type == 'backdrop':
+                    elif upload_type == 'backdrop':
                         self.media = self.collection.backdrops.get(medianame)
-                    elif type == 'audio':
+                    elif upload_type == 'audio':
                         self.media = self.collection.audios.get(medianame)
-                   #Lisa 21/08/2013 - removed video avatar code
+                    #Lisa 21/08/2013 - removed video avatar code
                     get_response(self.media, self.type)    
             except UpstageError, e:
                 log.msg(e)
@@ -1852,12 +1865,12 @@ class MediaUploadPage(Workshop):
         """
             Modified by Heath, Corey, Karena 24/08/2011 - Added media.tags to the response lines
         """
-        def get_response(media, type):
+        def get_response(media, upload_type):
             if type == 'avatar':    
                 response = \
                 "<file>" + media.file + "<file>" + \
                 "<name>" + media.name + "<name>" + \
-                "<type>" + type + "<type>" + \
+                "<type>" + upload_type + "<type>" + \
                 "<voice>" + media.voice + "<voice>" + \
                 "<date>" + media.dateTime + "<date>" + \
                 "<uploader>" + media.uploader + "<uploader>" + \
@@ -1865,7 +1878,7 @@ class MediaUploadPage(Workshop):
             else:
                 "<file>" + media.file + "<file>" + \
                 "<name>" + media.name + "<name>" + \
-                "<type>" + type + "<type>" + \
+                "<type>" + upload_type + "<type>" + \
                 "<date>" + media.date + "<date>" + \
                 "<uploader>" + media.uploader + "<uploader>" + \
                 "<tags>" + media.tags + "<tags>"
@@ -1915,7 +1928,7 @@ class EditPlayer(AdminBase):
             return errorpage(request, "You can't do that!", 'user')
         
         submit = _value('submit')
-        action = _value('action')        
+        #action = _value('action')        
 
         if submit == 'getplayer':
             try:
@@ -2138,7 +2151,7 @@ class ThingsList(AdminBase):
             return self
         #Lisa 21/08/2013 - removed video avatar code
         if name == 'player':
-            return EditPassword(self.player, self.collection)
+            return EditPassword(self.player, self.collection)   # FIXME EditPassword does not exist!
 
         f = self.collection.stages.get(name)
         if f and self.childClass is not None:
@@ -2168,11 +2181,11 @@ class StagePage(Resource):
         
         html = get_template("stage.xhtml")
         #Shaun Narayan (02/16/10) - Removed reference to URLEncode to build the URL as it input ampersands without escaping.
-        vars = 'stageID=%s&amp;policyport=%d&amp;mode=%s&amp;swfport=%d' %(stage.ID, config.POLICY_FILE_PORT,  mode, config.SWF_PORT)
+        stage_vars = 'stageID=%s&amp;policyport=%d&amp;mode=%s&amp;swfport=%d' %(stage.ID, config.POLICY_FILE_PORT,  mode, config.SWF_PORT)
         
         #Daniel Han (17/09/2012) - Added bgcolor and stage_message for page to display.
         self.html = html % {'stagename': stage.name, 
-            'vars': vars, 
+            'vars': stage_vars, 
             'bgcolor': stage.pageBgColour.replace('0x','#'),
             'stage_message': stage.splash_message
             }

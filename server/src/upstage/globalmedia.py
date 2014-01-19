@@ -46,7 +46,7 @@ Notes:
 {mediatypes}"""
 
 
-import os, inspect
+import os
 
 # pretty print for debugging (see: http://docs.python.org/2/library/pprint.html)
 import pprint
@@ -62,6 +62,7 @@ from twisted.python import log
 
 DELETE_PREFIX='delete_'
 
+# FIXME what actually does this function?
 def _check_thumb_sanity(tn):
     # not _really_ sane at all
     p = config.HTDOCS + tn
@@ -182,13 +183,13 @@ class MediaDict(Xml2Dict):
                         )
         dict.__setitem__(self, key, av)
 
-    def write_element(self, root, av, mf):
+    def write_element(self, root, _av, mf):
         """Add a new element to the XML dictionary
         @param root root XML element
-        @param av ignored
+        @param _av ignored
         @param mf list describing a node"""
-        #log.msg('should be writing element! %s: %s : %s :%s'%(root,av,dir(mf), self.element))
-        #attr['file']=av
+        #log.msg('should be writing element! %s: %s : %s :%s'%(root,_av,dir(mf), self.element))
+        #attr['file']=_av
         
         # AC (29.09.07) - Added uploader and datetime fields in XML media item files.
         node = root.add(self.element,
@@ -572,14 +573,15 @@ class MediaDict(Xml2Dict):
                         else:
                             log.msg("MediaDict: update_data(): invalid value '%s' for data key '%s' ... " % (newvalue,datakey))
                             return success
-                        
-                elif (datakey == 'videoimagepath'):
-                    log.msg("MediaDict: update_data(): processing data key '%s' ... " % datakey)
-                    
-                    # prepare data for video
-                    if (newvalue != '') and (media_type == 'avatars') and (media.medium == 'video'):
-                        prepare_data['file'] = ('%s/%s' % (config.WEBCAM_SUBURL, newvalue))
-                        prepare_data['web_thumbnail'] = ('%s%s' % (config.WEBCAM_STILL_URL, newvalue))
+
+# disabled   
+#                elif (datakey == 'videoimagepath'):
+#                    log.msg("MediaDict: update_data(): processing data key '%s' ... " % datakey)
+#                    
+#                    # prepare data for video
+#                    if (newvalue != '') and (media_type == 'avatars') and (media.medium == 'video'):
+#                        prepare_data['file'] = ('%s/%s' % (config.WEBCAM_SUBURL, newvalue))
+#                         prepare_data['web_thumbnail'] = ('%s%s' % (config.WEBCAM_STILL_URL, newvalue))
                     
                 else:
                     log.msg("MediaDict: update_data(): unknown data key '%s'. Unable to update data." % datakey)

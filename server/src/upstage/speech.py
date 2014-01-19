@@ -89,7 +89,7 @@ class SpeechDirectory(Resource):
     """Handle requests for speech to be generated, and web requests for
     the generated speech file.
     """
-    children = {}  # filename indexing child rersources.
+    children = {}  # filename indexing child resources.
     next_speech_id = id_generator(wrap=config.UTTERANCE_WRAP, prefix='utter-',
                                   suffix='.mp3').next
     

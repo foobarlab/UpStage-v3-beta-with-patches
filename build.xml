@@ -290,6 +290,11 @@ October 2013    Added JSHint JavaScript checker
 		<delete dir="${upstage.dir.apidoc}/client/html" />
 		<delete dir="${upstage.dir.apidoc}/server/html" />
 		<delete file="${upstage.dir.src}/${upstage.dir.templ}/swf/client.swf" />
+		<delete>
+			<fileset dir="${upstage.dir.src}">
+				<include name="**/*.pyc" />
+			</fileset>
+		</delete>
 	</target>
 	
 	<!-- just compile everything -->
@@ -564,11 +569,11 @@ October 2013    Added JSHint JavaScript checker
 			<istrue value="${upstage.isrelease}" />
 			<then>
 				<property name="TIMESTAMP" value="" />
-				<property name="RELEASEINFO" value="" />
+				<property name="RELEASEINFO" value=".release" />
 			</then>
 			<else>
-				<tstamp><format property="TIMESTAMP" pattern=".yyyy-MM-dd-HHmmss" /></tstamp>
-				<property name="RELEASEINFO" value=".dev" />
+				<tstamp><format property="TIMESTAMP" pattern="-yyyyMMdd.HHmmss" /></tstamp>
+				<property name="RELEASEINFO" value=".snapshot" />
 			</else>
 		</if>
 		
@@ -576,25 +581,21 @@ October 2013    Added JSHint JavaScript checker
 		<mkdir dir="${upstage.dir.dist}" />
 		
 		<!-- create zip archives -->
-		<zip destfile="${upstage.dir.dist}/upstage-${upstage.version}.${upstage.revision}${RELEASEINFO}-bin${TIMESTAMP}.zip">
-			<zipfileset dir="${upstage.dir.build}" excludes="**/EMPTY,**/*.pyc,**/pychecker*" />
-			<fileset dir="${basedir}" includes="LICENSE.txt" />
+		
+		<zip destfile="${upstage.dir.dist}/upstage-${upstage.version}.${upstage.revision}-bin${RELEASEINFO}${TIMESTAMP}.zip">
+			<zipfileset dir="${upstage.dir.build}" excludes="**/EMPTY,**/*.pyc,**/pychecker*" prefix="upstage-${upstage.version}.${upstage.revision}${RELEASEINFO}${TIMESTAMP}" />
+			<zipfileset dir="${basedir}" includes="LICENSE.txt,INSTALL.txt,README.md,STREAMING.txt" prefix="upstage-${upstage.version}.${upstage.revision}${RELEASEINFO}${TIMESTAMP}/doc" />
+			<zipfileset dir="${basedir}" includes="avstream_vlc_linux_example.sh" prefix="upstage-${upstage.version}.${upstage.revision}${RELEASEINFO}${TIMESTAMP}/doc/examples" />
 		</zip>
 		
-		<zip destfile="${upstage.dir.dist}/upstage-${upstage.version}.${upstage.revision}${RELEASEINFO}-src${TIMESTAMP}.zip">
-			<zipfileset dir="${upstage.dir.src}" prefix="server" excludes="**/EMPTY,**/*.pyc" />
-			<zipfileset dir="${upstage.dir.as2src}" prefix="client" excludes="**/EMPTY" />
-			<fileset dir="${basedir}" includes="LICENSE.txt" />
-		</zip>
-		
-		<zip destfile="${upstage.dir.dist}/upstage-${upstage.version}.${upstage.revision}${RELEASEINFO}-doc${TIMESTAMP}.zip">
-			<zipfileset dir="${upstage.dir.apidoc}" prefix="api" excludes="**/EMPTY" />
+		<zip destfile="${upstage.dir.dist}/upstage-${upstage.version}.${upstage.revision}-doc${RELEASEINFO}${TIMESTAMP}.zip">
+			<zipfileset dir="${upstage.dir.apidoc}" excludes="**/EMPTY" prefix="upstage-${upstage.version}.${upstage.revision}${RELEASEINFO}${TIMESTAMP}/doc/api" />
 		</zip>
 		
 	</target>
 	
-	<!-- run the application-->
-	<target name="run" depends="clean,build" description="run the application">
+	<!-- run the application (for development only, see INSTALL.txt for more info!) -->
+	<target name="run" depends="clean,build" description="run the application (for development only, see INSTALL.txt for more info!)">
 		
 		<!-- determine executable depending on os -->
 

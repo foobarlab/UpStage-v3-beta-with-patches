@@ -217,7 +217,7 @@ function savePlayer()
 	var hex1 = hex_md5(password);
 	var hex2 = hex_md5(password2);
 	
-	if(email == ""){
+	if(email === ""){
 		email = "Unset!";
 	}
 	
@@ -262,7 +262,7 @@ function updatePlayer()
 		var password = document.getElementById('password').value.trim();
 		var password2 = document.getElementById('password2').value.trim();
 		
-		if (password != '' && password2 != ''){		
+		if (password !== '' && password2 !== ''){		
 			var hex1 = hex_md5(password);
 			var hex2 = hex_md5(password2);
 
@@ -278,7 +278,7 @@ function updatePlayer()
 		}
 	}
 
-	if (email == "") {
+	if (email === "") {
 		email = "Unset!";
 	} else if (!validateEmailFormat(email)) {
 		alert('Please enter a valid email address or you can leave it blank');

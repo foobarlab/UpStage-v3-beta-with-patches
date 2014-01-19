@@ -65,7 +65,6 @@ class AudioDirectory(Resource):
         404s are generated eventually.  Uses a dictionary to remember recent requests
         """
         try:
-            the_path = self.children[path]
             return self.children[path]
         except KeyError:
             return error.NoResource('not there')

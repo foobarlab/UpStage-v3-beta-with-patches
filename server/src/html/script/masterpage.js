@@ -68,7 +68,7 @@ var warningMessages = ['This will reload the stage for all players and audience 
                        'This stage will be permanently deleted. Do you wish to proceed? (This will not delete any media that has been assigned to this stage.)',
                        'This will save the stage, losing any previous settings without reloading the stage. Do you wish to proceed?',
                        'This media item will be permanently deleted. Do you wish to proceed?"'
-                       ]
+                       ];
 var actions = ['save', 'cancel', 'delete', 'reset', 'save', 'delete', 'saveonly']; //Dont really need these, just makes server code more readable.
 
 /**
@@ -82,31 +82,31 @@ function init()
 function countPlayerAndAudience()
 {
 	var elements = document.getElementById('playerAudience').getElementsByTagName('tr');
-	var playerCount = new Number(0);;
-	var audCount = new Number(0);;
-	for(i in elements)
+	var playerCount = 0;
+	var audCount = 0;
+	for(var i in elements)
 	{
 		try
 		{
 			var e1 = elements[i].getElementsByTagName('td');
 			var pl = e1[2].innerHTML;
 			var au = e1[3].innerHTML;
-			if(pl != null)
+			if(pl !== null)
 			{
 				pl = trim(pl);
 			}
-			if(au != null)
+			if(au !== null)
 			{
 				au = trim(au);
 			}
-			if(pl != null && pl.length > 0)
+			if(pl !== null && pl.length > 0)
 			{
-				var x = parseInt(pl);
+				var x = parseInt(pl,null);
 				playerCount = playerCount + x;
 			}
-			if(au != null && au.length > 0)
+			if(au !== null && au.length > 0)
 			{
-				var y = parseInt(au);
+				var y = parseInt(au,null);
 				audCount = audCount + y;
 			}
 		}
@@ -129,12 +129,15 @@ function trim(value) {
  */
 function enterPressed(el, fn)
 {
+	
+	// TODO check NULL
+	
 	el.onkeydown = function (event) { 
 		if (event.keyCode == 13){//} && this == document.activeElement) {
 			// pass on the 3rd (or more) ... parameters to the fn function
 			fn(Array.prototype.slice.call(arguments, 2));
 		}
-	}
+	};
 }
 
 /**
@@ -145,19 +148,23 @@ function enterPressed(el, fn)
  */
 function shiftEnterPressed(el, fn)
 {
+	// TODO check NULL
+	
 	el.onkeydown = function (event) { 
 		if (event.keyCode == 13 && event.shiftKey){//} && this == document.activeElement) {
 			// pass on the 3rd (or more) ... parameters to the fn function
 			fn(Array.prototype.slice.call(arguments, 2));
 		}
-	}
+	};
 }
 
 //--------------------------------------
 function checkWebpageLogin()
 {
+	// TODO check NULL
+	
 	if (xmlhttp.readyState==4)
-  	{
+	{
 		if(xmlhttp.responseText.length > 0)
 		{
 			navHome();
@@ -167,24 +174,28 @@ function checkWebpageLogin()
 			cookieChecked = true;
 			navWorkshop();
 		}
-  	}
+	}
 }
 
 function temp_getCookie(c_name)
-	{
+{
+	
+	// TODO check NULL
+	
 	var i,x,y,ARRcookies=document.cookie.split(";");
 	for (i=0;i<ARRcookies.length;i++)
-	  {
-	  x=ARRcookies[i].substr(0,ARRcookies[i].indexOf("="));
-	  y=ARRcookies[i].substr(ARRcookies[i].indexOf("=")+1);
-	  x=x.replace(/^\s+|\s+$/g,"");
-	  if (x==c_name)
+	{
+		x=ARRcookies[i].substr(0,ARRcookies[i].indexOf("="));
+		y=ARRcookies[i].substr(ARRcookies[i].indexOf("=")+1);
+		x=x.replace(/^\s+|\s+$/g,"");
+		if (x==c_name)
 		{
-		return unescape(y);
+			return unescape(y);
 		}
-	  }
 	}
-	/**
+}
+
+   /**
 	*	Added by: Vibhu Patel / Heath Behrens - 12/08/2011
 	*				-Creates a cookie named usernameUpStage which contains the persons username
 	*				-Calls set cookie function
@@ -239,9 +250,9 @@ function clearLogin()
 		if(loggedInPlayer=='_NO_PLAYER_')
 		{
 			var usernameCookie=temp_getCookie("usernameUpStage");
-			if(usernameCookie != null && usernameCookie!="")
+			if(usernameCookie !== null && usernameCookie!=="")
 			{
-				var temp1 = new Array();
+				var temp1 = [];
 				temp1 = usernameCookie.split('=');
 				document.hidden_form.user_name.value = temp1[0];
 			}
@@ -263,22 +274,23 @@ function clearLogin()
 					html_str=loginLinks;
 				}
 				document.getElementById('signup').innerHTML = html_str;
-                removeWorkshopLink();
+				removeWorkshopLink();
 			}
 		}
 		else
 		{
 			/* serverInfo is the number of players and audience logged in, separted by a '#' */
 			var serverInfo = document.hidden_form.server_details.value;
-			var temp = new Array();
+			var temp = [];
 			temp = serverInfo.split('#');
 			document.getElementById('signup').innerHTML = 'Welcome back, ' +loggedInPlayer +'!<br/><a href="javascript:logout();">logout</a><br /><br /><strong>Currently on Stages</strong><br />Registered Players : ' + temp[0] + '<br />Guest Audiences : ' + temp[1];
-            createWorkshopLink();
+			createWorkshopLink();
 		}
 	}
 	catch(ex)
 	{
-		alert(ex);
+		log.fatal("masterpage.js: clearLogin(): Exception occurred: " + ex);
+		//alert(ex);
 	}
 }
 
@@ -289,6 +301,8 @@ function clearLogin()
  */
 function invertNav(set)
 {
+	// TODO check NULL
+	
 	document.getElementById(set+'link').style.backgroundColor = "#000000";
 	document.getElementById(set+'link').style.color = "#FFFFFF";
 }
@@ -297,8 +311,8 @@ function screenSize()
 {	
 	if (navigator.appName.indexOf("Microsoft")!=-1) 
 	{
-	    screenW = document.documentElement.clientWidth;
-	    screenH = document.documentElement.clientHeight;
+		screenW = document.documentElement.clientWidth;
+		screenH = document.documentElement.clientHeight;
 	}
 	else 
 	{
@@ -354,7 +368,7 @@ function navAdmin()
 {
     {
         window.location = '/admin';
-    }   
+    }
 }
 
 function navWorkshop()
@@ -384,6 +398,8 @@ function navSignup()
 
 function openStage(id)
 {
+	// TODO check NULL
+	
     window.location = '/stages/' + id;
 }
 
@@ -395,6 +411,8 @@ function login()
 		requestPage("GET", '/admin/perspective-init', null);
 	}
 
+	// TODO check NULL
+	
 	if(document.hidden_form.can_signup.value=='true')
 	{
 		loginForm += signup_html;
@@ -453,10 +471,12 @@ function logout()
  */
 function setCookie(c_name,value, expiredays, hour)
 {
+	// TODO check NULL
+	
 	var exdate=new Date();
 	exdate.setDate(exdate.getDate()+expiredays);
 	exdate.setHours(exdate.getHours() + hour);
-	document.cookie=c_name+ "=" +escape(value)+((expiredays==null) ? "" : ";path=/;expires="+exdate.toGMTString());
+	document.cookie=c_name+ "=" +escape(value)+((expiredays===null) ? "" : ";path=/;expires="+exdate.toGMTString());
 	var num=document.cookie.indexOf("usernameUpStage" + "=");
 	
 }
@@ -466,7 +486,7 @@ function setCookie(c_name,value, expiredays, hour)
 */
 function deleteCookie(c_name)
 {
- 	document.cookie = c_name + "=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+	document.cookie = c_name + "=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
 	document.cookie = c_name + "=;path=/admin/;expires=Thu, 01 Jan 1970 00:00:00 GMT";
 }
 
@@ -489,7 +509,7 @@ function getCookie(c_name)
 function checkCookie()
 {
 	var uname =getCookie('username');
-	if (uname!=null && uname!="")
+	if (uname!==null && uname!=="")
 	{
 		var password = getCookie('password');
 		requestPage("POST", '/admin/perspective-init?username='+uname+'&password='+password+'&submit=Login', checkLogin);
@@ -498,6 +518,8 @@ function checkCookie()
 
 function setPassword(name,pass)
 {
+	// TODO check NULL
+	
 	name = name.toLowerCase();
 	var md5val = hex_md5(pass);
 	if(document.login.remember.checked)
@@ -516,11 +538,12 @@ function setPassword(name,pass)
 function requestPage(method,page,onReady)
 {
 	xmlhttp=GetXmlHttpObject();
-	if (xmlhttp==null)
-  	{
-  		alert ("Your browser does not support XMLHTTP!");
-  		return;
-  	}
+	if (xmlhttp===null)
+	{
+		alert ("Your browser does not support XMLHTTP!");
+		// TODO log error
+		return;
+	}
 	var url=page;
 	//url=url+"&sid="+Math.random(); //Ensures no page caching
 	//xmlhttp.onreadystatechange=onReady;
@@ -531,25 +554,27 @@ function requestPage(method,page,onReady)
 
  function requestInfo(method,page,onReady)
  {
- 	xmlhttp=GetXmlHttpObject();
- 	if (xmlhttp==null)
-   	{
-   		alert ("Your browser does not support XMLHTTP!");
-   		return;
-   	}
- 	var url=page;
- 	//url=url+"&sid="+Math.random(); //Ensures no page caching
- 	xmlhttp.onreadystatechange=onReady;
- 	xmlhttp.open(method,url,true);
- 	xmlhttp.send(null);
+	 xmlhttp=GetXmlHttpObject();
+	 if (xmlhttp===null)
+	 {
+		 alert ("Your browser does not support XMLHTTP!");
+		 // TODO log error
+		 return;
+	 }
+	 var url=page;
+	 //url=url+"&sid="+Math.random(); //Ensures no page caching
+	 xmlhttp.onreadystatechange=onReady;
+	 xmlhttp.open(method,url,true);
+	 xmlhttp.send(null);
  } 
  
  function requestPageForm(method,page,actform,onReady)
  {
     xmlhttp=GetXmlHttpObject();
-	if (xmlhttp==null)
+	if (xmlhttp===null)
   	{
   		alert ("Your browser does not support XMLHTTP!");
+  		// TODO log error
   		return;
   	}
 	var url=page;
@@ -559,22 +584,23 @@ function requestPage(method,page,onReady)
     for (var i = 0; i < actform.elements.length; i++)
     {
         var element = actform.elements[i];
-        if(trim(element.name) == "")
+        if(trim(element.name) === "")
         {
             // if element has no name
             continue;
         }
-        else if((element.type == "radio" || element.type == "checkbox") && !element.checked)
+        else if((element.type === "radio" || element.type === "checkbox") && !element.checked)
         {
             // if element is radio button or checkbox but not checked... then continue..
             continue;
         }
-        else if(element.value == "")
+        else if(element.value === "")
         {
             continue;
         }
-        if(formStr.length > 0)
+        if(formStr.length > 0) {
                 formStr += "&";
+        }
         formStr += element.name + "=" + element.value;
         
     }
@@ -680,24 +706,24 @@ function fillPage()
 	{
 		document.getElementById("status").style.display = "none";
 		document.getElementById("status").innerHTML = "";
-        
+
 		if(document.title != 'Workshop - Media') // probably the stage edit page
 		{
-            try
-            {
-            	// reset alert box if it was used to preview media
-        		document.getElementById('popup').className = "";
+			try
+			{
+				// reset alert box if it was used to preview media
+				document.getElementById('popup').className = "";
 
-                var temp = (xmlhttp.responseText).split('<!--remove-->');
+				var temp = (xmlhttp.responseText).split('<!--remove-->');
 
-                document.getElementById("page").innerHTML = temp[1];
-                stageEdit();
-                restoreState();
+				document.getElementById("page").innerHTML = temp[1];
+				stageEdit();
+				restoreState();
 
-                var reply = trim(document.getElementById('successMsg').innerHTML);
+				var reply = trim(document.getElementById('successMsg').innerHTML);
 
-                if (reply != '') {
-	                showAlertBox(reply);
+				if (reply != '') {
+					showAlertBox(reply);
 
 					if (reply.indexOf('form') !== -1) {
 						// hide the form behind the popup
@@ -710,29 +736,29 @@ function fillPage()
 							document.getElementById('successMsg').innerHTML = "";
 						}, 5000);
 					}
-	            } else {
-	            	hidePopup();
+				} else {
+					hidePopup();
 
-	            	// if previewing media
-	            	var preBox = document.getElementById('editStageMediaPreview'),
-	            		preview = trim(preBox.innerHTML);
+					// if previewing media
+					var preBox = document.getElementById('editStageMediaPreview');
+					preview = trim(preBox.innerHTML);
 
-	            	if (preview != '') {
-	            		showAlertBox(preview);
-	            		preBox.style.display = "none";
-	            		document.getElementById('popup').className = "preview";
-	            	} else {
-	            		preBox.style.display = "inherit"; // reset
-	            	}
-	            }
+					if (preview != '') {
+						showAlertBox(preview);
+						preBox.style.display = "none";
+						document.getElementById('popup').className = "preview";
+					} else {
+						preBox.style.display = "inherit"; // reset
+					}
+				}
 
-                if(reply.indexOf("deleted") > 0)
-                {
-                    navStageWorkshop();
-                }
-            }
-            catch(ex){}
-            
+				if(reply.indexOf("deleted") > 0)
+				{
+					navStageWorkshop();
+				}
+			}
+			catch(ex){}
+
 		}
 		//Call to remove the footer from the response page so that the footer is not duplicated.
 		//Heath Behrens & Mohammed 07-05-2011
@@ -745,11 +771,11 @@ function fillPage()
 		catch(ex)
 		{}
 		
-        if(xmlhttp.status == 500)
-        {
-            hideElementById("divShade");
-        }
-        
+		if(xmlhttp.status == 500)
+		{
+			hideElementById("divShade");
+		}
+
 		//-------------------------------------------------------
 		
 	}
@@ -757,6 +783,8 @@ function fillPage()
 
 function hideElementById(div)
 {
+	// TODO check NULL
+	
     document.getElementById(div).style.display = 'none';
 }
 
@@ -769,15 +797,15 @@ function hidePopup()
 function GetXmlHttpObject()
 {
 	if (window.XMLHttpRequest)
-  	{
-  		// code for IE7+, Firefox, Chrome, Opera, Safari
-  		return new XMLHttpRequest();
-  	}
+	{
+		// code for IE7+, Firefox, Chrome, Opera, Safari
+		return new XMLHttpRequest();
+	}
 	if (window.ActiveXObject)
-  	{
-  		// code for IE6, IE5
-  		return new ActiveXObject("Microsoft.XMLHTTP");
- 	}
+	{
+		// code for IE6, IE5
+		return new ActiveXObject("Microsoft.XMLHTTP");
+	}
 	return null;
 }
 
@@ -929,6 +957,8 @@ function buildRequestFromForm(formElement)
  */
 function warn(type)
 {
+	// TODO check NULL
+	
 	doIt=confirm(warningMessages[type]);
 	if(doIt)
 	{

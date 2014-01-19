@@ -220,38 +220,38 @@ function callAjaxDeleteData(key,deleteIfInUse) {
 	$.ajax({type: "POST",
 		url: url+"?ajax=delete_data",
 		data: {
-        	'select_key': key,
-        	'deleteIfInUse': deleteIfInUse,
-        },
-        success: function(response) {
-        	
-        	if(response.status == 200) {
-        		
-        		// gracefully refresh data
-        		setupMediaEdit(url,user,stages,false);
+			'select_key': key,
+			'deleteIfInUse': deleteIfInUse,
+		},
+		success: function(response) {
+			
+			if(response.status == 200) {
+
+				// gracefully refresh data
+				setupMediaEdit(url,user,stages,false);
 				
 				// reset keydown event on colorbox
 				enterPressed($('#colorbox').get(0), null); 
-        		// close colorbox
-        		$.fn.colorbox.close(); //return false;
-        		
-        	} else {
-        		
-        		// handle known errors
-        		showKnownError(response.timestamp,response.status,response.data);
-        		
-        		// gracefully refresh data
-        		setupMediaEdit(url,user,stages,false);
-        	}
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown){
-            
-        	// handle unknown errors (may be 'no connection')
-        	showUnknownError(textStatus,errorThrown);
-        	
-        	// gracefully refresh data
-        	setupMediaEdit(url,user,stages,false);
-        },
+				// close colorbox
+				$.fn.colorbox.close(); //return false;
+
+			} else {
+
+				// handle known errors
+				showKnownError(response.timestamp,response.status,response.data);
+
+				// gracefully refresh data
+				setupMediaEdit(url,user,stages,false);
+			}
+		},
+		error: function(XMLHttpRequest, textStatus, errorThrown){
+
+			// handle unknown errors (may be 'no connection')
+			showUnknownError(textStatus,errorThrown);
+			
+			// gracefully refresh data
+			setupMediaEdit(url,user,stages,false);
+		},
 	});
 }
 
@@ -262,38 +262,38 @@ function callAjaxAssignToStage(key,selectedStages) {
 	$.ajax({type: "POST",
 		url: url+"?ajax=assign_to_stage",
 		data: {
-        	'select_key': key,
-        	'select_stages': selectedStages,
-        },
-        success: function(response) {
+			'select_key': key,
+			'select_stages': selectedStages,
+		},
+		success: function(response) {
 
-        	if(response.status == 200) {
-        		
-        		// gracefully refresh data
-            	setupMediaEdit(url,user,stages,false);
+			if(response.status == 200) {
 				
+				// gracefully refresh data
+				setupMediaEdit(url,user,stages,false);
+
 				// reset keydown event on colorbox
 				enterPressed($('#colorbox').get(0), null);
-        		// close colorbox
-        		$.fn.colorbox.close(); //return false;
-            	
-        	} else {
-        		
-        		// handle known errors
-        		showKnownError(response.timestamp,response.status,response.data);
-        		
-        		// gracefully refresh data
-            	setupMediaEdit(url,user,stages,false);
-        	}
-        },
-        error: function(XMLHttpRequest, textStatus, errorThrown){
-        	
-        	// handle unknown errors (may be 'no connection')
-        	showUnknownError(textStatus,errorThrown);
-        	
-        	// gracefully refresh data
-        	setupMediaEdit(url,user,stages,false);
-        },
+				// close colorbox
+				$.fn.colorbox.close(); //return false;
+
+			} else {
+
+				// handle known errors
+				showKnownError(response.timestamp,response.status,response.data);
+				
+				// gracefully refresh data
+				setupMediaEdit(url,user,stages,false);
+			}
+		},
+		error: function(XMLHttpRequest, textStatus, errorThrown){
+
+			// handle unknown errors (may be 'no connection')
+			showUnknownError(textStatus,errorThrown);
+
+			// gracefully refresh data
+			setupMediaEdit(url,user,stages,false);
+		},
 	});
 }
 

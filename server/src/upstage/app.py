@@ -23,7 +23,7 @@ Modified by: Phillip Quinlan, Endre Bernhardt
 Notes: 
 """
 
-import os, sys
+import os
 
 # upstage
 from upstage import config

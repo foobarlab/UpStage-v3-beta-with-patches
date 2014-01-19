@@ -1,4 +1,6 @@
 #!/bin/bash
+# vim: enc=utf-8 fenc=utf-8 ff=unix
+#
 # script to test all configured voices
 # writes result to a temporary folder
 #

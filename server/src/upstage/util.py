@@ -99,15 +99,27 @@ def getFileSizes(filenames):
 """ Alan (13/09/07) ==> Check the file sizes are valid under 1MB for normal users 
     and less than 10MB for super admin users. Anything over 10MB is denied. """ # Ing - 10MB
 def validSizes(sizes, super_admin):
-    valid = True
-    limit = 0
+    # default should be to deny the size (catches cases whenever "sizes" is empty or invalid)
+    #valid = True
+    valid = False
+    #limit = 0
+    limit = None
     if super_admin: # is user a super admin?
         limit = config.SUPER_ADMIN_SIZE_LIMIT
     else:
         limit = config.ADMIN_SIZE_LIMIT
-    for item in sizes:
-        if (item > limit):
-            valid = False
+    
+    if limit is None:
+        valid = True
+    else:
+        for item in sizes:
+            #if (item > limit):
+            if (item < limit):
+                valid = True
+            else:
+                valid = False
+                break
+    
     return valid
 
 def createHTMLOptionTags(data_list_or_set):

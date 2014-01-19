@@ -54,8 +54,10 @@ body, td, p
 body
 {
 	/* Mohammed Al-Timimi (08/06/11) - Changed BG image */
-	background-image:url('/image/main-bg.jpg');
-/*	min-width:1200px;	(29/10/2010 PR - Was causing view fault when not maximized */ 
+	background-image:url('../image/main-bg.jpg');
+/*	min-width:1200px;	(29/10/2010 PR - Was causing view fault when not maximized */
+	margin:0;
+	padding:0;
 }
 
 a
@@ -71,7 +73,7 @@ h1
 	font-weight: bold; 
 	font-size: 14px; 
 	line-height: 14px;
-	margin-top:0;
+	margin:0 0 20px 0;
 }
 
 h3
@@ -119,10 +121,8 @@ th
 
 body.full
 {
-	display: table;
 	margin: 0px;
-	height: 100%;
-	width: 100%;
+    height: 100%;
 }
 tr.inactive
 {
@@ -184,14 +184,21 @@ p.error
 
 #masterpage
 {
+	/*
 	margin-left:10%;
 	margin-right:10%;
-	height:100%;
-	border: 2px #669900 solid;
-	background-color : #FFFFFF;
 	margin-top: 40px;
 	margin-bottom: 40px;
-    min-width: 970px;
+	*/
+	margin: 40px auto;
+	/*height:100%;*/
+	border: 2px #669900 solid;
+	background-color : #FFFFFF;
+	/*min-width:960px;*/
+	min-width:1004px;
+	max-width:1120px;
+	width:auto;
+	/*overflow:auto;*/
 }
 #header
 {
@@ -264,7 +271,8 @@ p.error
 }
 #edit
 {
-	height:100%;
+	height:auto;
+	overflow:hidden;
 }
 
 /*Mohammed Al-Timimi (08/06/11) - Syntax was completely wrong for the following */
@@ -401,10 +409,10 @@ input, select, button {
 #muLeftContent {
 	position: relative;
 	float: left;
-	width: 57%;
+	width: 60%;
 	height: auto;
 	padding: 10px;
-	margin: 10px 0;
+	margin: 10px;
 	overflow: auto;
 	border: 2px solid #669900;
 }
@@ -412,11 +420,10 @@ input, select, button {
 #muRightContent {
 	position: relative;
 	float: left;
-	width: 35%;
-	/*height: 290px;*/
+	width: 30%;
+	height: 280px;
 	padding:10px;
-	margin: 10px 0;
-	margin-left: 2%;
+	margin: 10px;
 	border: 2px solid #669900;
 }
 
@@ -594,8 +601,8 @@ a.IconButton
 
 #divForm
 {
-	margin: auto 0;
-	padding: auto 0;
+	margin: 10px;
+	padding: 10px;
 }
 
 #editStageGeneral
@@ -633,8 +640,8 @@ a.IconButton
 	width: 100%;
 	border-bottom: #690 1px dashed;
 	border-top: #690 1px dashed;
+	padding-top: 10px;
 	padding-bottom: 10px;
-    height: 150px;
 	
 }
 
@@ -662,7 +669,7 @@ a.IconButton
 
 #splash_message
 { 
-	width: 98%;
+	width:99%;
 	height:8em;
 }
 
@@ -926,14 +933,20 @@ a.IconButton
 
 #divPopup
 {
-    margin: auto;
+    margin: 10px;
     padding: 15px;
     box-shadow: #AAA 1px 1px 10px;
     border-radius: 5px;
     border: #888 2px solid;
     background-color: #EEE;
+    position: fixed;
+    left: 35%;
+    right: auto;
+    top: 45%;
+    bottom: auto;
     text-align: center;
     display: none;
+    z-index: 9999;
 }
 
 #divShade
@@ -1008,13 +1021,16 @@ a.IconButton
 
 #stagePopUp
 {
-	text-align: center;
-	vertical-align: middle;
-	display: table-cell;
+    display: block;
     padding:0px;
     margin:0px;
+    position: fixed;
     height: 100%;
     width: 100%;
+    background-color: #fff;
+    background-image:url('../image/main-bg.jpg');
+    top: 0px;
+    left: 0px;
     z-index: 9998;
 }
 
@@ -1026,14 +1042,19 @@ a.IconButton
 
 .loadingBox
 {
-	margin: auto;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-left: -150px;
+    margin-top: -125px;
     background-color: #fff;
     color: #000;
     border-radius: 20px;
     border: #eee 2px solid;
-    width: 300px;
+    width: 320px;
+    height: 250px;
     text-align: center;
-    padding: 20px;
+    padding: 10px;
     box-shadow: #333 1px 1px 10px;
 }
 
@@ -1046,7 +1067,7 @@ a.IconButton
 	word-wrap: break-word;
 }
 
-.swfstage
+#swfstage
 {
     margin:0; 
     padding:0; 
@@ -1069,30 +1090,24 @@ a.IconButton
 #filterDiv {
 	display:inline-block;
 	margin-bottom:10px;
-	clear:both;
 }
 
 .filterRow {
 	width:100%;
 	display:block;
 	clear:both;
+	float:left;
 	margin-bottom:5px;
 }
 
 .filterTitle {
-	margin-top: 20px;
-	margin-bottom: 10px;
+	float:left;
 	font-weight:bold;
 }
 
 .filterBlock {
 	float:left;
-	margin: 7px 0 7px 5px;
-}
-
-.filterButtons {
-	float: right;
-	margin: 7px 0 7px 20px;
+	margin: 7px 0 7px 10px;
 }
 
 #viewPanel {
@@ -1147,9 +1162,8 @@ a.IconButton
 
 #detailsPanel {
 	float:left;
-	margin-left:2%;
+	margin-left:3%;
 	text-align:center;
-	width: 37%;
 }
 
 .buttonRow {
@@ -1212,9 +1226,6 @@ input[type=checkbox] {
 #controlButtons {
 	height:55px;
 	display:block;
-	margin-left: auto;
-	margin-right: auto;
-	width: 100%;
 }
 
 .controlButton {
@@ -1225,11 +1236,6 @@ input[type=checkbox] {
 	color:#999;
 	border:2px solid #999;
 	border-radius:5px;
-	width: 12%;
-}
-
-.controlButton .icon-2x{
-	font-size: 30px;
 }
 
 .controlButton:hover {
@@ -1253,8 +1259,6 @@ table#tableDetails {
 	margin-top:15px;
 	max-width:350px;
 	overflow:hidden;
-	margin-left: auto;
-	margin-right: auto;
 }
 
 #tableDetails tr:nth-child(even) {
@@ -1360,10 +1364,10 @@ table#tableDetails {
 	margin:-10px 0;
 }
 
-.movie {
+#movie {
 	display:block;
 	height:400px;
-	width:534px;
+	width:600px;
 	background: url('images/transparent_background.gif') repeat scroll right bottom #EEEEEE;
 	border:1px solid #ccc;
 }
@@ -1373,14 +1377,14 @@ table#tableDetails {
 	text-align: right;
 }
 
-.movie-controls {
+#movie-controls {
 	display:block;
 	margin:10px 0 0 0;
 	height:40px;
-	width:560px;
+	width:600px;
 }
 
-.movie-controls .controlButton {
+#movie-controls .controlButton {
 	width:40px;
 	height:40px;
 	margin:0 1px 0 0;

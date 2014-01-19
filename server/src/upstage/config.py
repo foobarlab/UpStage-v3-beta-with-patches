@@ -31,10 +31,13 @@ Changelog:
 #
 # Contains directory constants definition of voices and port numbers
 
+import os
 from os.path import join as _join
 
-#VERBOSE = True
-VERBOSE = False
+DEPLOY_DIR = os.getcwd()
+
+VERBOSE = True
+#VERBOSE = False
 
 POLICY_FILE = "<?xml version=\"1.0\"?> \
                <cross-domain-policy> \
@@ -83,8 +86,8 @@ MUSIC_ICON_IMAGE_URL    = '/image/icon/icon-music.png'
 SFX_ICON_IMAGE_URL      = '/image/icon/icon-bullhorn.png'
 
 # icon styles for music and sfx thumbnails
-MUSIC_ICON	= 'icon-music' #Martins
-SFX_ICON	= 'icon-bullhorn' #Martins
+MUSIC_ICON	= 'icon-music'
+SFX_ICON	= 'icon-bullhorn'
 
 # file system paths
 # these relate to the above url paths
@@ -145,11 +148,10 @@ LOG_ROTATE_SIZE = 1024 * 1024
 
 KILLALL_SCRIPT = '/usr/bin/killall'
 
-#Uncomment if installed using deb pkg
-#IMG2SWF_SCRIPT = '/usr/local/bin/img2swf.py'
-
-#Comment below at AUT
-IMG2SWF_SCRIPT = './img2swf.py'
+IMG2SWF_SCRIPT =  _join(DEPLOY_DIR,'img2swf.py')
+#IMG2SWF_SCRIPT_ABS_PATH = _join(DEPLOY_DIR,IMG2SWF_SCRIPT)
+#IMG2SWF_SCRIPT = _join(DEPLOY_DIR,'test_success.py')
+#IMG2SWF_SCRIPT =  _join(DEPLOY_DIR,'test_error.py')
 
 IMG2SWF_LOG = './img2swf.log'
 
@@ -175,57 +177,54 @@ SUPER_ADMIN_SIZE_LIMIT = 10000000 # Ing - change the limit for admin and unlimit
 LIBRARY_PREFIX = 'library:'
 LIBRARY_ID_LENGTH = 8
 
-# FIXME all settings below should go to voices.py
-
-"""Added by: Henry, Vibhu and Heath AUT Team 2011"""
-
-## @brief Voice definitions, used by speech engine (stage.py) and avatar editing (pages.py)
-# and the speaker.py script.
-# _fest = " - -o -  2>>./speech.log | lame -S -x  -m m -r -s 16 --bitwidth 16 --preset phone - "
-# _fest = " - -     lame -S -x -m m -r -s 16 --bitwidth 16 --preset phone - "
-_fest_lame = "| timeout 15 lame -S -x -m s -r -s %s --resample 22.05 --preset phone - "
-_rsynth_lame = "| timeout 15 lame -S -x -m m -r -s 11.025 --preset phone - "
-_fest = " - -o -  2>>%s " % SPEECH_LOG + _fest_lame % 16
-_fest11 = " - -o -  2>>%s " % SPEECH_LOG + _fest_lame % 11.025
-
-
-## @brief VOICES a list of the available voices
-VOICES = {
-          #festival/mbrola:
-          'default': ("| timeout 15 text2wave -eval '(voice_us1_mbrola)' -otype raw", 
-                      _fest),          
-          'roger': ("| timeout 15 text2wave -eval '(voice_en1_mbrola)' -otype raw", 
-                    _fest),
-          'bud': ("| timeout 15 text2wave -eval '(voice_us2_mbrola)' -otype raw", 
-                  _fest),
-          'randy': ("| timeout 15 text2wave -eval '(voice_us3_mbrola)' -otype raw", 
-                  _fest),
-          
-          #festival/festival
-          'kal': ("| timeout 15 text2wave -eval '(voice_kal_diphone)' -otype raw", 
-                  _fest),
-          'ked': ("| timeout 15 text2wave -eval '(voice_ked_diphone)' -otype raw", 
-                  _fest),
-          'rab': ("| timeout 15 text2wave -eval '(voice_rab_diphone)' -otype raw", 
-                  _fest),
-          'don': ("| timeout 15 text2wave -eval '(voice_don_diphone)' -otype raw", 
-                  _fest11
-                  ),
-          
-          #rsynth:
-          'slow': ("| timeout 15 rsynth-say -a  -l -x 1200 -S 3  -  2>>./speech.log ",
-                   _rsynth_lame
-                  ),
-          'high': ("| timeout 15 rsynth-say -a  -l -x 2800 -S 1.4  -  2>>./speech.log ",
-                   _rsynth_lame
-                  ),
-          'crunchy' :("| timeout 15 rsynth-say -a  -l -x 1000 -f 16 -F 700 -t 20  -  2>>./speech.log ",
-                   _rsynth_lame
-                  ), 
-         }         
-
-
-del _fest, _rsynth_lame, _fest11, _fest_lame
-
-
-"""New Added lines end"""
+# FIXME obsolete
+#
+#"""Added by: Henry, Vibhu and Heath AUT Team 2011"""
+#
+### @brief Voice definitions, used by speech engine (stage.py) and avatar editing (pages.py)
+## and the speaker.py script.
+## _fest = " - -o -  2>>./speech.log | lame -S -x  -m m -r -s 16 --bitwidth 16 --preset phone - "
+## _fest = " - -     lame -S -x -m m -r -s 16 --bitwidth 16 --preset phone - "
+#_fest_lame = "| timeout 15 lame -S -x -m s -r -s %s --resample 22.05 --preset phone - "
+#_rsynth_lame = "| timeout 15 lame -S -x -m m -r -s 11.025 --preset phone - "
+#_fest = " - -o -  2>>%s " % SPEECH_LOG + _fest_lame % 16
+#_fest11 = " - -o -  2>>%s " % SPEECH_LOG + _fest_lame % 11.025
+#
+#
+### @brief VOICES a list of the available voices
+#VOICES = {
+#          #festival/mbrola:
+#          'default': ("| timeout 15 text2wave -eval '(voice_us1_mbrola)' -otype raw", 
+#                      _fest),          
+#          'roger': ("| timeout 15 text2wave -eval '(voice_en1_mbrola)' -otype raw", 
+#                    _fest),
+#          'bud': ("| timeout 15 text2wave -eval '(voice_us2_mbrola)' -otype raw", 
+#                  _fest),
+#          'randy': ("| timeout 15 text2wave -eval '(voice_us3_mbrola)' -otype raw", 
+#                  _fest),
+#          
+#          #festival/festival
+#          'kal': ("| timeout 15 text2wave -eval '(voice_kal_diphone)' -otype raw", 
+#                  _fest),
+#          'ked': ("| timeout 15 text2wave -eval '(voice_ked_diphone)' -otype raw", 
+#                  _fest),
+#          'rab': ("| timeout 15 text2wave -eval '(voice_rab_diphone)' -otype raw", 
+#                  _fest),
+#          'don': ("| timeout 15 text2wave -eval '(voice_don_diphone)' -otype raw", 
+#                  _fest11
+#                  ),
+#          
+#          #rsynth:
+#          'slow': ("| timeout 15 rsynth-say -a  -l -x 1200 -S 3  -  2>>./speech.log ",
+#                   _rsynth_lame
+#                  ),
+#          'high': ("| timeout 15 rsynth-say -a  -l -x 2800 -S 1.4  -  2>>./speech.log ",
+#                   _rsynth_lame
+#                  ),
+#          'crunchy' :("| timeout 15 rsynth-say -a  -l -x 1000 -f 16 -F 700 -t 20  -  2>>./speech.log ",
+#                   _rsynth_lame
+#                  ), 
+#         }         
+#
+#
+#del _fest, _rsynth_lame, _fest11, _fest_lame

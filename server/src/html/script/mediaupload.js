@@ -23,7 +23,7 @@
 
 // global variables
 var navigate;
-var allDivs = new Array();
+var allDivs = [];
 allDivs[0]="avatarBits";
 allDivs[1]="propBits";
 allDivs[2]="backdropBits";
@@ -61,7 +61,7 @@ function enableSubmit() {
 */
 function setActionForMedia(activate, mediatype)
 {
-	log.debug("setActionForMedia(): activate="+activate);
+	log.debug("setActionForMedia(): activate="+activate+" mediatype="+mediatype);
 
 	var action = '';
 	if(activate)
@@ -432,28 +432,28 @@ function checkAllFields()
 	
 	// check to have all required fields filled:
 	
-	if(type == null)
+	if(type === null)
 	{
 		filled = false;
 		alert("You have not chosen a media type!");
 		setAction(false);
 		setContinue(false);
 	}
-	else if(name == '')
+	else if(name === '')
 	{
 		filled = false;
 		alert("You have not entered a name!");
 		setAction(false);
 		setContinue(false);
 	}
-	else if(hasStreaming == 'true' && streamServer == '' )
+	else if(hasStreaming === 'true' && streamServer === '' )
 	{
 		filled = false;
 		alert("You have not entered a stream server!");
 		setAction(false);
 		setContinue(false);
 	}
-	else if(hasStreaming == 'true' && streamName == '' )
+	else if(hasStreaming === 'true' && streamName === '' )
 	{
 		filled = false;
 		alert("You have not entered a stream name!");
@@ -526,7 +526,7 @@ function checkFieldsBeforeReplace()
 function setContinue(cont)
 {
 	navigate = cont;
-	log.debug('setContinue(): ' + navigate)
+	log.debug('setContinue(): navigate=' + navigate);
 }
 
 /*
@@ -551,32 +551,36 @@ function checkExtensions(type)
 
 	var filename = '',
 		fileID = '',
-		shallContinue = false;
+		shallContinue = false,
+		prefix = '',
+		frameNo = 0;
 
 	if(type == "avatar")
 	{
-		var frameNo = parseInt(document.getElementById('avframecount').value);
-		var prefix = 'av';
+		var elementFrameCount = document.getElementById('avframecount');
+		frameNo = parseInt(elementFrameCount.value,null);
+		prefix = 'av';
 
 		shallContinue = checkAllMedia(type, prefix, frameNo);
 	}
 	else if(type == "backdrop")
 	{
-		var frameNo = parseInt(document.getElementById('bkframecount').value);
-		var prefix = 'bk';
+		var elementFrameCount = document.getElementById('bkframecount');
+		frameNo = parseInt(elementFrameCount.value);
+		prefix = 'bk';
 
 		shallContinue = checkAllMedia(type, prefix, frameNo);
 	}
 	else if(type == "prop")
 	{
-		var frameNo = 1; // parseInt(document.getElementById('prframecount').value);
-		var prefix = 'pr';
+		frameNo = 1; // parseInt(document.getElementById('prframecount').value);
+		prefix = 'pr';
 
 		shallContinue = checkAllMedia(type, prefix, frameNo);
 	}
 	else if(type == "audio")
 	{
-		var prefix = 'au';
+		prefix = 'au';
 		fileID = prefix + "contents0";        
 		var f = document.getElementById(fileID);
 		filename = f.value;   
@@ -595,9 +599,10 @@ function checkExtensions(type)
  */
 function checkFileSizeAgainstPermissions(size)
 {
-    if(size > 1000000 || document.getElementById('can_upload_big_file').value != 'True')
+	if(size === null) { log.error("mediaupload.js: checkFileSizeAgainstPermissions(size): size is null"); }
+    if(size > 1000000 || document.getElementById('can_upload_big_file').value != 'True')	// FIXME put into MAX_SIZE const (additionally 1MB is not exactly 1000000 Bytes, it is rather 1048576 Bytes)
     {
-        alert("You cannot upload files of greater than 1mb. Please try again.");
+        alert("You cannot upload files of greater than 1MB. Please try again.");	// FIXME calculate Megabytes from MAX_SIZE const dynamically 
         return false;
     }
     else
@@ -608,6 +613,7 @@ function checkFileSizeAgainstPermissions(size)
 
 function checkAllMedia(type, prefix, frameNo)
 {
+	if(frameNo === null) { log.error("mediaupload.js: checkAllMedia(type, prefix, frameNo): frameNo is null"); }
 	var filename = '',
 		fileID = '',
 		shallContinue = true;
@@ -630,16 +636,16 @@ function checkAllMedia(type, prefix, frameNo)
  */
 function checkMediaType(filename, type, size, frameNum)
 {
-	log.debug("checkMediaType(): filename="+filename+", type="+type);
+	log.debug("mediaupload.js: checkMediaType(): filename="+filename+", type="+type+", size="+size+", frameNum="+frameNum);
 	
 	var splitfilename = filename.split(".");
 	//Modified by heath behrens (28/07/2011) - now accesses last element in the array
-	var fileExt = splitfilename[splitfilename.length-1];
+	var fileExt = splitfilename[splitfilename.length-1];	// FIXME may not work with all filenames 
 	var shallContinue = false;
 	
 	if(type == "audio")
 	{
-		if(fileExt == "mp3")
+		if(fileExt == "mp3")	// FIXME also take care of uppercase/lowercase combinations
 		{
 			shallContinue = true;
 		}
@@ -651,9 +657,9 @@ function checkMediaType(filename, type, size, frameNum)
 	else
 	{
 		//Modified by heath behrens (2011). Just makes sure that its not case sensitive.
-		if(fileExt.toUpperCase() == "JPG" || fileExt.toUpperCase() == "SWF" 
-			|| fileExt.toUpperCase() == "PNG" || fileExt.toUpperCase() == "GIF" 
-			||fileExt.toUpperCase() == 'JPEG')
+		if(fileExt.toUpperCase() == "JPG" || fileExt.toUpperCase() == "SWF" ||
+			fileExt.toUpperCase() == "PNG" || fileExt.toUpperCase() == "GIF" || 
+			fileExt.toUpperCase() == 'JPEG')
 		{
             shallContinue = true;
             if( fileExt.toUpperCase() == "SWF" || fileExt.toUpperCase() == "GIF")
@@ -689,7 +695,7 @@ function checkUploadVoiceTest() {
     
 	var selection = _getElementById('voice').selectedIndex;
 	log.debug("checkUploadVoiceTest(): selectedIndex = " + selection);
-	if(selection.value == "no_voice") {
+	if(selection == 0) {
 		hideUploadVoiceTest();	// hide voice test if 'none' is selected
 	} else {
 		showUploadVoiceTest();
@@ -698,13 +704,13 @@ function checkUploadVoiceTest() {
 
 function showUploadVoiceTest() {
 	log.debug("showUploadVoiceTest())");
-    _getElementById('uploadVoicetest').style.visibility = 'visible';
+    _getElementById('uploadVoicetest').style.display = 'inline';
     
 }
 
 function hideUploadVoiceTest() {
 	log.debug("hideUploadVoiceTest()");
-    _getElementById('uploadVoicetest').style.visibility = 'hidden';
+    _getElementById('uploadVoicetest').style.display = 'none';
     
 
 }
@@ -720,7 +726,10 @@ function uploadVoiceTest()
     var voiceDiv = _getElementById("uploadVoicediv");
     var voiceError = _getElementById("uploadVoiceerror");
     
-    voiceDiv.style.height = '0px';
+    voiceDiv.style.height = '30px';
+    voiceDiv.style.width = '80%';
+    voiceDiv.style.display = 'block';
+    voiceDiv.style.margin = '10px';
     
     voiceError.style.display = 'none';
     voiceError.style.margin = '10px';
@@ -743,7 +752,7 @@ function uploadVoiceTest()
         },
         
         onFinish: function() {
-        	//voiceDiv.style.display = 'none';	// hide player
+        	voiceDiv.style.display = 'none';	// hide player
         	cancelVoiceTest.style.display = 'none';	// hide cancel button
         	this.unload();
         },
@@ -775,7 +784,7 @@ function uploadVoiceTest()
         			errorMessage = "Unable to load stream or clip file<br />"+voicefile;
         			break;
         	}
-        	
+
         	// hide player
         	voiceDiv.style.display = 'none';
         	
@@ -840,7 +849,7 @@ function resetUploadVoiceTest() {
 	
 	// remove player
 	voiceDiv.innerHTML = '';
-	voiceDiv.style.visibility = 'hidden';
+	voiceDiv.style.display = 'none';
 	
 	// reset error display
 	voiceError.innerHTML = '';
@@ -1146,15 +1155,26 @@ function saveInformation()
 /* ---- generic functions */
 
 function _getElementById(id) {
+	if(id === null) {
+		log.error("mediaupload.js: _getElementById(id): id is null!");
+	} else {
+		log.debug("mediaupload.js: _getElementById(id): id = " + id);
+	}
 	return document.getElementById(id);
 }
 
 function _resetInputText(element) {
+	if(element === null) {
+		log.error("mediaupload.js: _resetInputText(element): element is null!");
+	} else {
+		log.debug("mediaupload.js: _resetInputText(element): element = " + element);
+	}
 	element.text = "";
 }
 
 function _resetInputDropDown(element,value) {
-	value = typeof value !== 'undefined' ? value : 0;	// set to '0' (first) if no parameter given
+	if(element === null) { log.error("mediaupload.js: _resetInputDropDown(element,value): element is null!"); }
+	value = ((typeof value !== 'undefined') ? value : 0);	// set to '0' (first) if no parameter given
 	element.selectedIndex = value;
 }
 
@@ -1173,7 +1193,7 @@ function resetForm() {
 	resetPropForm();
 	resetBackdropForm();
 	resetAudioForm();
-	resetVideoAvatarForm();
+	//resetVideoAvatarForm();	// FIXME remove, obsolete
 }
 
 function resetAvatarForm() {
@@ -1182,7 +1202,7 @@ function resetAvatarForm() {
 	
 	resetForm_BasicSettings();									// name and tags
 	_resetInputDropDown(_getElementById("voice"));				// voice selection dropdown
-	_resetInputText(_getElementById("text"));					// voice test text
+	_resetInputText(_getElementById("uploadVoiceText"));		// voice test text
 	_getElementById("checkBoxStreaming").checked = false;		// disable streaming checkbox
 	hideStreamSettings();										
 	_resetInputText(_getElementById("streamserver"));			// streamserver text
@@ -1212,8 +1232,8 @@ function resetAvatarForm() {
 function resetPropForm() {
 	log.debug("resetAvatarForm()");
 	resetForm_BasicSettings();
-	_resetInputDropDown(_getElementById("prframecount"),0);		// frame count
-	displayFields('prframecount', 'pr', 1);
+	//_resetInputDropDown(_getElementById("prframecount"),0);		// frame count	// TODO remove, obsolete
+	//displayFields('prframecount', 'pr', 1);
 	enableSubmit();	// enable submit button
 }
 
@@ -1232,13 +1252,15 @@ function resetAudioForm() {
 	enableSubmit();	// enable submit button
 }
 
+//FIXME remove, obsolete
+/*
 function resetVideoAvatarForm() {
 	log.debug("resetAvatarForm()");
 	resetForm_BasicSettings();
 	_resetInputDropDown(_getElementById("vidslist"));			// video list
 	enableSubmit();	// enable submit button
 }
-
+*/
 
 function resetForm_BasicSettings() {
 	_resetInputText(_getElementById("name"));

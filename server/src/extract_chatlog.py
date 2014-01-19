@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# vim: enc=utf-8 fenc=utf-8 ff=unix
 #
 # Description:
 # ============

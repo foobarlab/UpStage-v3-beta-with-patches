@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# vim: enc=utf-8 fenc=utf-8 ff=unix
+#
 #Copyright (C) 2003-2006 Douglas Bagnall (douglas@paradise.net.nz)
 #
 #This program is free software; you can redistribute it and/or
@@ -48,15 +50,49 @@ A thumbnail version will be placed in THUMBNAIL.JPG. (if possible)
 #
 # $ img2swf.py /tmp/tempfile  media/outfile.swf
 #
-# Should return exit code 0 on success.
+# Returns exit code 0 on success, and exit code 1 on failure.
 
-import os, sys, tempfile
+import glob, os, sys, tempfile
 import shutil
 import time
+import subprocess
 
-from upstage.config import IMG2SWF_LOG, LOG_ROTATE_SIZE
+from upstage.config import IMG2SWF_LOG
 from upstage.util import redirect_to_log
 
+# replace netpbmtools with python-imaging?
+"""
+from PIL import Image
+import glob, os
+
+size = 128, 128
+
+for infile in glob.glob("*.jpg"):
+    file, ext = os.path.splitext(infile)
+    im = Image.open(infile)
+    im.thumbnail(size, Image.ANTIALIAS)
+    im.save(file + ".thumbnail", "JPEG")
+"""
+
+
+# replaced os.system with subprocess.call
+# see: http://docs.python.org/2/library/os.html
+# see: http://docs.python.org/2/library/subprocess.html#subprocess-replacements
+
+# @brief executes a given command string
+# @param cmd the command to execute
+def execute_command(cmd):
+    retcode = None
+    print "about to execute command: %s" % cmd
+    try:
+        retcode = subprocess.call(cmd, shell=True)
+        if retcode < 0:
+            print >>sys.stderr, "Child was terminated by signal", -retcode
+        else:
+            print >>sys.stderr, "Child returned", retcode
+    except OSError, e:
+        print >>sys.stderr, "Execution failed:", e
+    return [retcode, cmd]
 
 ## @brief Raise an IOError
 # @param tfn ignored
@@ -72,23 +108,20 @@ def do_nothing(tfn, swf):
 # FIXED BY VISHAAL 01/06/09, straight gif2wf converter 
 # instead of gif->png->swf
 def do_gif(tfn, swf):
-    #png = tempfile.mkstemp('.png')[1]
-    #cmd = 'cat %s | gif2png -n -fO > %s ; png2swf -o %s %s' % (tfn, png, swf, png)
-    cmd = 'gif2swf -o %s %s' % (swf, tfn)
-    err = os.system(cmd)
-    #os.remove(png)
-    return (err, cmd)
+    ##png = tempfile.mkstemp('.png')[1]
+    ##cmd = 'cat %s | gif2png -n -fO > %s ; png2swf -o %s %s' % (tfn, png, swf, png)
+    cmd = 'gif2swf -v 2 -z -o %s %s' % (swf, tfn)
+    ##os.remove(png)
+    return execute_command(cmd)
 
 ## @brief Convert from png to swf
 # @param swf output file name
 # @param tfn input file name
 def do_png(tfn, swf):
     #cmd = 'png2swf -o %s %s' % (swf, tfn)
-    cmd = 'png2swf -o %s %s' % (swf, tfn)
-    err = os.system(cmd)
-    return (err, cmd)
-
-
+    cmd = 'png2swf -v 2 -z -o %s %s' % (swf, tfn)
+    return execute_command(cmd)
+    
 ## @brief Convert from jpg to swf
 # @param swf output file name
 # @param tfn input file name
@@ -96,19 +129,15 @@ def do_jpg(tfn, swf):
     # BH 23-Jun-2006 -z instead of -m for flash player 6
     # Gives better image quality using swftools 0.7.0
     #cmd = 'jpeg2swf -m -o %s %s' % (swf, tfn)
-    cmd = 'jpeg2swf -z -q85 -o %s %s' % (swf, tfn)
-    err = os.system(cmd)
-    return (err, cmd)
-
+    cmd = 'jpeg2swf -v 2 -z -M -q100 -o %s %s' % (swf, tfn)
+    return execute_command(cmd)
 
 ## @brief Dummy conversion for swf files.
 # @param swf output file name
 # @param tfn input file name
 def do_swf(tfn, swf):
     cmd = 'cp %s %s' % (tfn, swf)
-    err = os.system(cmd)
-    return (err, cmd)
-
+    return execute_command(cmd)
 
 ## @brief Make a thumbnail from the supplied image
 # @param filetype image/png, image/jpeg, image/gif, application/x-shockwave-flash
@@ -125,15 +154,20 @@ def thumbnailer(filetype, tfn, thumb):
           'image/jpeg' : 'jpegtopnm %s | pnmscale -height=80 -width=70 | pnmtojpeg > %s',
           #'image/jpeg'     : 'djpeg %s | pnmscale -height=20 | pnmtojpeg > %s',          #commented out as fixed in above line Vishaal 01/06/09
           'application/x-shockwave-flash' : 'cp %s %s',  #utterly wrong thing to do -- wants jpg not swf
+          #'application/x-shockwave-flash' : 'swfrender %s -o %s',  #utterly wrong thing to do -- wants jpg not swf
           'image/gif'      : 'giftopnm  %s | pnmscale -height=80 -width=70 | pnmtojpeg > %s'
     }
     tempf = tempfile.mkstemp('.jpg')[1]
     cmd = types[filetype] % (tfn, tempf)
-    err = os.system(cmd)
-    print cmd
+    
+    print "thumbnailer command: %s" % cmd
+    result, cmd = execute_command(cmd)
+    
+    print "command '%s' returned with status %s" % (cmd,result)
 
-    if err or not os.path.exists(tempf):
-        print "%s %s %s %s" % (tempf, thumb, filetype, err)
+    #if result or not os.path.exists(tempf):
+    if not os.path.exists(tempf):
+        print "tempfile: %s, thumb: %s, filetype: %s, result: %s" % (tempf, thumb, filetype, result)
         raise RuntimeError("Couldn't make tempfile for thumbnail")
 
     try:
@@ -183,26 +217,31 @@ def convert(files, swf, thumb):
 
     print "Filetype is '%s', convertor is %s\n" %(filetype, convertor)
     filestr = ' '.join(files)
-    err, cmd = convertor(filestr, swf)
-    print "Done SWF, got %s, %s\n" %(err, cmd)
-    if err:
-        raise IOError('Command "%s" apparently failed: returned "%s"' % (cmd, err))
-    print "no errors yet!"
-
+    result, cmd = convertor(filestr, swf)
+    print "Done SWF: command: %s, result: %s\n" %(cmd,result)
+    
+    #if result:
+    #    raise IOError('Command "%s" apparently failed: returned "%s"' % (cmd, result))   
+    
     if not os.path.exists(swf):
         raise IOError('Command "%s" apparently failed: "%s" does not exist!' % (cmd, swf))
 
+    
     thumbnailer(filetype, files[0], thumb)
 
-    # delete temporary files.
-    try:
-        for f in files:
-            os.remove(f)
-            print "removing %s" % f
-    except (OSError, IOError ), e:
-        print ("Error removing temp file %s: %s" % (f, e))
-        raise
+#    # delete temporary files.
+#    try:
+#        for f in files:
+#            print "removing temp file %s" % f
+#            os.remove(f)
+#            
+#    except (OSError, IOError ), e:
+#        print ("Error removing temp file %s: %s" % (f, e))
+#        raise
+    
     return swf
+
+
 
 
 
@@ -210,22 +249,55 @@ def convert(files, swf, thumb):
 # Commandline parameters:
 # output filename, output filename for thumbnail, input file name[s]
 def main():
-    if '--help' in sys.argv or '-h' in sys.argv:
+    
+    args = sys.argv
+    if '--help' in args or '-h' in args:
         print __doc__
-        sys.exit()
+        sys.exit(0)
 
     redirect_to_log(IMG2SWF_LOG)
     print '-' * 72
     print time.strftime('%Y-%m-%d %H:%M:%S')
-    print "arguments are:\n  %s" %'\n  '.join(sys.argv[1:])
-
-    swf, thumb = sys.argv[1: 3]
-    files = sys.argv[3:]
+    
+    args_length = len(args)
+    print 'Number of arguments:', args_length - 1, 'arguments.'
+    if args_length > 1:
+        print "arguments are:\n %s" % '\n '.join(args[1:])
+        if args_length < 4:
+            print "missing arguments, expected at least 3 arguments"
+            sys.exit(1)
+    else:
+        #raise RuntimeError("no arguments given")
+        print "no arguments given, expected at least 3 arguments"
+        sys.exit(1)
+    
+    swf, thumb = args[1: 3]
+    files = args[3:]
     if not files:
-        raise RuntimeError("no files to convert (got '%s'" % ' '.join(sys.argv))
+        #raise RuntimeError("no files to convert (got '%s'" % ' '.join(sys.argv))
+        print "no files to convert (got '%s'" % ' '.join(args)
+        sys.exit(1)
 
-    x = convert(files, swf, thumb)
-    print "worked, or at least failed to complain."
+    work_dir = os.getcwd()
+    print "current working directory: %s" % work_dir
+    
+    swf = os.path.abspath(swf)
+    thumb = os.path.abspath(thumb)
+    
+    print "absolute path swf: %s" % swf
+    print "absolute path thumb: %s" % thumb
+
+    try:
+        result = convert(files, swf, thumb)
+        print "final result: %s" % result
+        print "worked, or at least failed to complain."
+    except Exception, e:
+        print "exception during conversion: %s" % e
+        print "no result, exit code: 1"
+        sys.exit(1)
+        
+    print "exit code: 0"
+    sys.exit(0)
 
 if __name__ == '__main__':
     main()

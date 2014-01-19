@@ -1,7 +1,5 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<!--[if IE]> <html class="ie" xmlns="http://www.w3.org/1999/xhtml"> <![endif]-->
-<!--[if !IE]><!--> <html xmlns="http://www.w3.org/1999/xhtml"> <!--<![endif]-->
-
+<!DOCTYPE html>
+<html>
 <head>
 <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
 <title>UpStage</title>
@@ -9,14 +7,14 @@
 <link rel="stylesheet" type="text/css" href="/style/main.css" />
 <link rel="shortcut icon" href="/favicon.ico" />
 
+<script language="javascript" type="text/javascript" src="/script/jshash/md5.js" ></script>
+<script language="javascript" type="text/javascript" src="/script/custom-context-menu/rightClick.js"></script>
+
 <script language="javascript" type="text/javascript" src="/script/masterpage.js"></script>
-<script language="javascript" type="text/javascript" src="/client.js"></script>
 <script language="javascript" type="text/javascript" src="/script/stageedit.js"></script>
 <script language="javascript" type="text/javascript" src="/script/mediaupload.js"></script>
 <script language="javascript" type="text/javascript" src="/script/mediaedit.js"></script>
 <script language="javascript" type="text/javascript" src="/script/user.js"></script>
-<script language="javascript" type="text/javascript" src="/script/jshash/md5.js" ></script>
-<script language="javascript" type="text/javascript" src="/script/image-slideshow.js"></script>
 
 </head>
 
@@ -30,7 +28,7 @@
 			</div>
 			<form name="hidden_form" action="">
 			<input name="user_name" type ="hidden" value="%(username)s" />
-			<input name="can_signup" type="hidden" value="%(allow_signup)s"/ >
+			<input name="can_signup" type="hidden" value="%(allow_signup)s" />
 			<input name="server_details" type="hidden" value="%(server_details)s" />
 			</form>
 				<div id="signup">

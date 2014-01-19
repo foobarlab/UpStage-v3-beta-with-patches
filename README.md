@@ -1,56 +1,66 @@
-## Installation & Usage
-________
+UpStage Server
+==============
 
-Run `python install.py` to install UpStage, and use `upstage-admin` command to create and manage UpStage server(s) after successful installation
-> root permission is probably required
+<a href="http://upstage.org.nz/">UpStage</a> is a client-server application platform for <a href="http://en.wikipedia.org/wiki/Cyberformance">Cyberformance</a>.
+This is a fork of the pre-released beta version 3.0 with additional patches.
 
-### Other options
+You can find more information about using UpSTage in the End User Manuals here:
+ * <a href="http://en.flossmanuals.net/upstage-v242-user-manual/">user manual</a>
+ * <a href="http://upstage.org.nz/blog/?p=5445">streaming (video hack) manual</a>
 
-- `python install.py cc` to compile client.swf (uses `mtasc` and `swfmill`)
-- `python install.py deb` to generate .deb package
+## Licence
 
-### Uninstallaion
+See LICENSE.txt for the GNU General Public License.
 
-To uninstall UpStage from the system, execute `uninstall.sh` script with appropriate permission
+## Requirements
 
-### Dependencies
+UpStage requires Python version 2.6 or 2.7 with <a href="http://twistedmatrix.com">Twisted</a> (&gt;= 8.1, &lt; 9.0, 8.2 recommended) and <a href="http://pypi.python.org/pypi/zope.interface">zope.interface</a>.
+  
+## Third-party dependencies
 
-- espeak
-- festival
-- gif2png
-- libgif4
-- netpbm
-- python-twisted 8.2.0 recommended
-- lame >= 3.97-0.0
-- libgdbmg >= 1.7.3-28
-- rsynth >= 2.0-6
-- mbrola >= 3.01h-6
-- swftools >= 0.9.0-0ubuntu1
-- python <= 2.5.2
-- pymad (NEW)
+UpStage uses various third-party software and libraries which will enhance functionality:
 
-twisted: wget http://tmrc.mit.edu/mirror/twisted/Twisted/8.2/Twisted-8.2.0.tar.bz2
+#### Media upload and conversion (required to upload non-flash media like images)
 
-swftools: wget http://archive.canonical.com/ubuntu/pool/partner/s/swftools/swftools_0.9.0-0ubuntu2_i386.deb
+ * <a href="http://www.swftools.org/">SWFTOOLS</a> (converts images to SWF)
+ * <a href="http://www.pythonware.com/products/pil/">python-imaging (PIL)</a> (used for creating thumbnails) 
 
-rsynth: wget http://archive.debian.org/debian-archive/debian/pool/non-free/r/rsynth/rsynth_2.0-6_i386.deb
+#### Text-to-Speech (optional)
 
+ * <a href="http://lame.sourceforge.net/">LAME</a> (used to convert audio to MP3)
+ * <a href="http://sourceforge.net/projects/rsynth/">rsynth</a> (TTS engine)
+ * <a href="http://espeak.sourceforge.net/">eSpeak</a> (TTS engine)
+ * <a href="http://tcts.fpms.ac.be/synthesis/mbrola.html">MBROLA</a> (TTS engine)
+ * <a href="http://www.cstr.ed.ac.uk/projects/festival/">Festival</a> (TTS engine)
+ 
+#### Audio-, Video- and Live-Streaming (optional)
 
-## For Development
-________
+For media streaming functionality (Video Hack feature) the <a href="http://www.red5.org">Red5 media server</a> is recommended, alternatively FMS, Wowza or any RTMP-capable streaming server of your choice.
+If you already have access to a streaming server you just enter the stream URLs in UpStage and wont need to run or install your own media streaming server.
 
-Use `ant` to compile/build/run (other targets are not tested yet)
-> Note: you need to install `mtasc` and `swfmill` to compile UpStage client
+## Download and Installation
+ 
+To install UpStage and its required software please refer to INSTALL.txt for further instructions.
+Additional scripts can be found in the <a href="">install directory</a>.
 
-### Ant Targets:
+## Network settings
 
-- `ant clean-start` to build a new instance of UpStage and run it as a background process
-- `ant start` to start the built instance of UpStage as a background process
-- `ant stop` to stop the UpStage server instance running in the background
-- `ant build` to build UpStage, and `build/upstage-server.sh` to run the server manually on default ports
-- `ant run` to  build and run automatically
-- `ant clean` to clean `build` and `temp` directories
-- `ant compile-swf` to compile client swf files
+The UpStage server application makes use of the following TCP ports (you may override the defaults):
 
-________
-#### AUT UpStage Team 2013
+ * Web port (8081) - serves contents to the browser
+ * SWF port (7230) - communications between server and clients (Flash client running in the browser)
+ * Flash policy port (843) - serves a "crossdomain.xml" which allows Flash clients to access server ports
+ * RTMP port (1935) - handles all RTMP data sent to the client (includes A/V-streaming)
+
+Those incoming ports will have to be opened on the server-side.
+
+## Development
+
+UpStage consists of a client (ActionScript 2) and server (Python/Twisted) part.
+ActionScript code is compiled using <a href="http://www.mtasc.org/">MTASC</a> and <a href="http://swfmill.org/">swfmill</a>.
+The code documentation for both client and server is generated using <a href="http://www.doxygen.org/">Doxygen</a>.
+
+#### Recommended IDE configuration
+
+You may use <a href="http://www.eclipse.org/">Eclipse IDE</a> with <a href="http://sourceforge.net/projects/aseclipseplugin/">ASDT</a> and <a href="http://pydev.org/">PyDev</a> plugins installed.
+Alternatively you may use the <a href="http://www.flashdevelop.org/">FlashDevelop IDE</a>.

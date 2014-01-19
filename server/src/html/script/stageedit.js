@@ -88,7 +88,7 @@ function stageEdit()
  */
 function genColorTable(elementID)
 {
-	var color = new Array();
+	var color = [];
 	color[0] = 0;
 	color[1] = 0;
 	color[2] = 0;
@@ -96,7 +96,7 @@ function genColorTable(elementID)
 	
 	colorPicker='<table id="ColorPicker">';
 	for(var i = 0; i < 6; i++)
-	{;
+	{
 		for(var a = 0; a < 2; a++)
 		{
 			colorPicker+='<tr id="ColorPickerTr">';
@@ -321,7 +321,7 @@ function stageChooseSubmit(create)
  */
 function saveState()
 {
-	state = new Array();
+	state = [];
 	var x = 0;
 	for(i in colorTypes)
 	{
@@ -340,8 +340,8 @@ function saveState()
  */
 function restoreState()
 {
-	if(state == undefined) return;
-	var cola = new Array();
+	if(state === undefined) return;
+	var cola = [];
 	var x = 0;
 	for(i in colorTypes)
 	{
@@ -486,7 +486,7 @@ function lockDisableAll(lBl,oBl)
  */
 function discourage_edit(){
     var count = document.getElementById('usercount');
-    if (count != undefined){
+    if (count !== undefined){
         alert("There are people using this stage -- don't edit it now!");
 
         var elements = document.forms[0].elements;
