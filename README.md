@@ -24,7 +24,6 @@ UpStage uses various third-party software and libraries which will enhance funct
 #### Media upload and conversion (required to upload non-flash media like images)
 
  * <a href="http://www.swftools.org/">SWFTOOLS</a> (converts images to SWF)
- * <a href="http://www.pythonware.com/products/pil/">python-imaging (PIL)</a> (used for creating thumbnails) 
 
 #### Text-to-Speech (optional)
 
