@@ -4,7 +4,7 @@ UpStage Server
 <a href="http://upstage.org.nz/">UpStage</a> is a client-server application platform for <a href="http://en.wikipedia.org/wiki/Cyberformance">Cyberformance</a>.
 This is a fork of the pre-released beta version 3.0 with additional patches.
 
-You can find more information about using UpSTage in the End User Manuals here:
+You can find more information about using UpStage in the End User Manuals here:
  * <a href="http://en.flossmanuals.net/upstage-v242-user-manual/">user manual</a>
  * <a href="http://upstage.org.nz/blog/?p=5445">streaming (video hack) manual</a>
  * <a href="http://upstage.org.nz/blog/wp-content/uploads/upstagev3usermanualdraft.pdf">v3 beta usermanual (draft)</a>
