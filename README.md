@@ -7,6 +7,7 @@ This is a fork of the pre-released beta version 3.0 with additional patches.
 You can find more information about using UpSTage in the End User Manuals here:
  * <a href="http://en.flossmanuals.net/upstage-v242-user-manual/">user manual</a>
  * <a href="http://upstage.org.nz/blog/?p=5445">streaming (video hack) manual</a>
+ * <a href="http://upstage.org.nz/blog/wp-content/uploads/upstagev3usermanualdraft.pdf">v3 beta usermanual (draft)</a>
 
 ## Licence
 
@@ -41,7 +42,7 @@ If you already have access to a streaming server you just enter the stream URLs 
 ## Download and Installation
  
 To install UpStage and its required software please refer to INSTALL.txt for further instructions.
-Additional scripts can be found in the <a href="">install directory</a>.
+Additional scripts can be found in the <a href="../master/install">install directory</a>.
 
 ## Network settings
 
@@ -58,9 +59,9 @@ Those incoming ports will have to be opened on the server-side.
 
 UpStage consists of a client (ActionScript 2) and server (Python/Twisted) part.
 ActionScript code is compiled using <a href="http://www.mtasc.org/">MTASC</a> and <a href="http://swfmill.org/">swfmill</a>.
-The code documentation for both client and server is generated using <a href="http://www.doxygen.org/">Doxygen</a>.
+The API documentation for both client and server is generated using <a href="http://www.doxygen.org/">Doxygen</a>.
 
 #### Recommended IDE configuration
 
-You may use <a href="http://www.eclipse.org/">Eclipse IDE</a> with <a href="http://sourceforge.net/projects/aseclipseplugin/">ASDT</a> and <a href="http://pydev.org/">PyDev</a> plugins installed.
-Alternatively you may use the <a href="http://www.flashdevelop.org/">FlashDevelop IDE</a>.
+This fork is developed using the <a href="http://www.eclipse.org/">Eclipse IDE</a> with <a href="http://sourceforge.net/projects/aseclipseplugin/">ASDT</a> and <a href="http://pydev.org/">PyDev</a> plugins installed.
+Additionally parts are developed using <a href="http://www.flashdevelop.org/">FlashDevelop IDE</a>.
