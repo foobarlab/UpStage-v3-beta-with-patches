@@ -5,9 +5,9 @@ UpStage Server
 This is a fork of the pre-released beta version 3.0 with additional patches.
 
 You can find more information about using UpStage in the End User Manuals here:
- * <a href="http://en.flossmanuals.net/upstage-v242-user-manual/">user manual</a>
- * <a href="http://upstage.org.nz/blog/?p=5445">streaming (video hack) manual</a>
- * <a href="http://upstage.org.nz/blog/wp-content/uploads/upstagev3usermanualdraft.pdf">v3 beta usermanual (draft)</a>
+ * <a href="http://en.flossmanuals.net/upstage-v242-user-manual/">user manual (v2.4.2)</a>
+ * <a href="http://upstage.org.nz/blog/?p=5445">streaming (video hack) manual (v2.4.2 + video streaming)</a>
+ * <a href="http://upstage.org.nz/blog/wp-content/uploads/upstagev3usermanualdraft.pdf">v3-beta user manual (v3.0.0 draft)</a>
 
 ## Licence
 
